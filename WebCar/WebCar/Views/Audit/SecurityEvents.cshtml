@@ -1,0 +1,434 @@
+﻿@model List<WebCar.Models.AUDIT_LOG>
+
+@{
+    ViewBag.Title = "Security Events";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="security-events-page">
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2">
+                    <i class="fas fa-shield-alt text-danger me-2"></i>
+                    Security Events Monitor
+                </h2>
+                <p class="text-muted mb-0">
+                    Giám sát các sự kiện bảo mật quan trọng
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="@Url.Action("Dashboard")" class="btn btn-outline-primary">
+                    <i class="fas fa-chart-line me-2"></i>Dashboard
+                </a>
+                <button class="btn btn-danger" onclick="exportSecurityReport()">
+                    <i class="fas fa-file-pdf me-2"></i>Xuất báo cáo
+                </button>
+            </div>
+        </div>
+
+        <!-- Security Stats -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="security-stat stat-danger">
+                    <div class="stat-icon">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>@Model.Count(x => x.HANHDONG.Contains("ACCESS_DENIED"))</h4>
+                        <p>Access Denied</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="security-stat stat-warning">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>@Model.Count(x => x.HANHDONG.Contains("FAILED"))</h4>
+                        <p>Failed Attempts</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="security-stat stat-info">
+                    <div class="stat-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>@Model.Count(x => x.HANHDONG.Contains("PASSWORD"))</h4>
+                        <p>Password Changes</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="security-stat stat-success">
+                    <div class="stat-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>@Model.Count(x => x.HANHDONG.Contains("LOGIN"))</h4>
+                        <p>Login Events</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Events Table -->
+        <div class="card modern-card">
+            <div class="card-header bg-transparent border-0 pb-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list text-danger me-2"></i>
+                        Tất cả Security Events
+                    </h5>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-secondary active" onclick="filterEvents('all')">Tất cả</button>
+                        <button class="btn btn-outline-danger" onclick="filterEvents('critical')">Critical</button>
+                        <button class="btn btn-outline-warning" onclick="filterEvents('warning')">Warning</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover security-table mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px">#</th>
+                                <th>Thời gian</th>
+                                <th>Loại sự kiện</th>
+                                <th>Người dùng</th>
+                                <th>IP Address</th>
+                                <th>Chi tiết</th>
+                                <th style="width: 100px">Mức độ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var log in Model)
+                                {
+                                    var severityClass = log.IsCritical ? "table-danger-light" : "table-warning-light";
+                                    var severityBadge = log.IsCritical ? "danger" : "warning";
+                                    var severityText = log.IsCritical ? "Critical" : "Warning";
+
+                                    <tr class="@severityClass" data-severity="@severityText. ToLower()">
+                                        <td>
+                                            <span class="log-badge">
+                                                @if (log.IsCritical)
+                                                {
+                                                    <i class="fas fa-exclamation-circle text-danger"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                                                }
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong>@log.FormattedDate</strong>
+                                            <br />
+                                            <small class="text-muted">@log.TimeAgo</small>
+                                        </td>
+                                        <td>
+                                            <div class="event-type">
+                                                <i class="@log.ActionIcon me-2"></i>
+                                                <span class="@log.StatusBadgeClass">@log. HANHDONG</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="user-info">
+                                                <div class="user-avatar-sm">
+                                                    @if (!string.IsNullOrEmpty(log.DisplayName))
+                                                    {
+                                                        @log.DisplayName.Substring(0, 1).ToUpper()
+                                                                                    }
+                                                    else
+                                                    {
+                                                        <text>? </text>
+                                                    }
+                                                </div>
+                                                <div>
+                                                    <strong>@log.DisplayName</strong>
+                                                    @if (!string.IsNullOrEmpty(log.CustomerEmail))
+                                                    {
+                                                        <br /><small class="text-muted">@log.CustomerEmail</small>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <code class="ip-badge">@log.IP</code>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(log.BANGTACDONG))
+                                            {
+                                                <span class="badge bg-secondary">@log.BANGTACDONG</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-@severityBadge">
+                                                <i class="fas fa-shield-alt"></i> @severityText
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <i class="fas fa-shield-alt fa-3x text-muted mb-3 d-block"></i>
+                                        <p class="text-muted">Không có security events</p>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="row g-4 mt-2">
+            <div class="col-12">
+                <div class="card modern-card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            Khuyến nghị bảo mật
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="recommendation-item">
+                                    <i class="fas fa-lock fa-2x text-danger mb-3"></i>
+                                    <h6>Bật Two-Factor Authentication</h6>
+                                    <p class="text-muted small mb-2">Tăng cường bảo mật với xác thực 2 lớp cho tất cả admin users</p>
+                                    <button class="btn btn-sm btn-outline-danger">Cấu hình</button>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="recommendation-item">
+                                    <i class="fas fa-ban fa-2x text-warning mb-3"></i>
+                                    <h6>Block suspicious IPs</h6>
+                                    <p class="text-muted small mb-2">Chặn các IP có nhiều lần đăng nhập thất bại</p>
+                                    <button class="btn btn-sm btn-outline-warning">Xem danh sách</button>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="recommendation-item">
+                                    <i class="fas fa-key fa-2x text-info mb-3"></i>
+                                    <h6>Password Policy</h6>
+                                    <p class="text-muted small mb-2">Yêu cầu đổi mật khẩu định kỳ 90 ngày</p>
+                                    <button class="btn btn-sm btn-outline-info">Thiết lập</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .security-events-page {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .modern-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Security Stats */
+        .security-stat {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+
+            .security-stat:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            }
+
+        .stat-danger {
+            border-left-color: #dc3545;
+        }
+
+        .stat-warning {
+            border-left-color: #ffc107;
+        }
+
+        .stat-info {
+            border-left-color: #0dcaf0;
+        }
+
+        .stat-success {
+            border-left-color: #198754;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+
+        .stat-danger .stat-icon {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        .stat-warning . stat-icon {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .stat-info .stat-icon {
+            background: rgba(13, 202, 240, 0.1);
+            color: #0dcaf0;
+        }
+
+        .stat-success . stat-icon {
+            background: rgba(25, 135, 84, 0.1);
+            color: #198754;
+        }
+
+        .stat-content h4 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        . stat-content p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+
+        /* Security Table */
+        .security-table thead {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+
+            .security-table thead th {
+                border: none;
+                padding: 15px;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 0.875rem;
+            }
+
+        . security-table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+
+        .table-danger-light {
+            background: rgba(220, 53, 69, 0.05);
+        }
+
+        .table-warning-light {
+            background: rgba(255, 193, 7, 0.05);
+        }
+
+        .log-badge {
+            font-size: 1.25rem;
+        }
+
+        .event-type {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar-sm {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .ip-badge {
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.875rem;
+            color: #495057;
+        }
+
+        /* Recommendations */
+        .recommendation-item {
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+            .recommendation-item:hover {
+                border-color: #dc3545;
+                background: #fff;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function filterEvents(severity) {
+            const rows = document.querySelectorAll('. security-table tbody tr[data-severity]');
+            const buttons = document.querySelectorAll('. btn-group button');
+
+            // Update button states
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Filter rows
+            rows.forEach(row => {
+                if (severity === 'all') {
+                    row.style. display = '';
+                } else {
+                    row.style.display = row.dataset.severity === severity ? '' : 'none';
+                }
+            });
+        }
+
+        function exportSecurityReport() {
+            alert('Chức năng xuất báo cáo PDF sẽ được implement! ');
+        }
+    </script>
+}

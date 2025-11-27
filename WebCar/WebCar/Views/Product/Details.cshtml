@@ -1,0 +1,738 @@
+﻿@model WebCar.Models.CAR
+
+@{
+    ViewBag.Title = Model.TENXE;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="product-details-page">
+    <div class="container py-5">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="@Url. Action(" Index")">Sản phẩm</a></li>
+                <li class="breadcrumb-item active">@Model.TENXE</li>
+            </ol>
+        </nav>
+
+        <div class="row g-4">
+            <!-- Left: Image Gallery -->
+            <div class="col-lg-6">
+                <div class="product-gallery">
+                    <!-- Main Image -->
+                    <div class="main-image">
+                        <img src="@Url.Content("~/" + Model.HINHANH)"
+                             alt="@Model.TENXE"
+                             id="mainImage"
+                             onerror="this.src='@Url.Content("~/images/cars/default. jpg")'" />
+
+                        <!-- Status Badge -->
+                        @if (Model.TRANGTHAI == "Còn hàng")
+                        {
+                            <span class="status-badge badge-success">
+                                <i class="fas fa-check-circle"></i> Còn hàng
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="status-badge badge-danger">
+                                <i class="fas fa-times-circle"></i> Hết hàng
+                            </span>
+                        }
+                    </div>
+
+                    <!-- Thumbnail Images (Placeholder) -->
+                    <div class="thumbnail-gallery mt-3">
+                        <div class="row g-2">
+                            <div class="col-3">
+                                <img src="@Url.Content("~/" + Model.HINHANH)"
+                                     class="thumbnail active"
+                                     onclick="changeImage(this. src)" />
+                            </div>
+                            <div class="col-3">
+                                <img src="@Url.Content("~/" + Model.HINHANH)"
+                                     class="thumbnail"
+                                     onclick="changeImage(this.src)" />
+                            </div>
+                            <div class="col-3">
+                                <img src="@Url.Content("~/" + Model.HINHANH)"
+                                     class="thumbnail"
+                                     onclick="changeImage(this.src)" />
+                            </div>
+                            <div class="col-3">
+                                <img src="@Url.Content("~/" + Model.HINHANH)"
+                                     class="thumbnail"
+                                     onclick="changeImage(this.src)" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Product Info -->
+            <div class="col-lg-6">
+                <div class="product-info-section">
+                    <!-- Brand -->
+                    <span class="product-brand">@Model.HANGXE</span>
+
+                    <!-- Title -->
+                    <h1 class="product-title">@Model.TENXE</h1>
+
+                    <!-- Rating (Placeholder) -->
+                    <div class="product-rating mb-3">
+                        <span class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </span>
+                        <span class="rating-text">4.5/5 (123 đánh giá)</span>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="product-price-box">
+                        @if (Model.GIA.HasValue)
+                        {
+                            <div class="price">
+                                <span class="current-price">@string.Format("{0:N0}", Model.GIA) đ</span>
+                                <span class="price-note">*Giá đã bao gồm VAT</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="price">
+                                <span class="current-price">Liên hệ</span>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Specifications -->
+                    <div class="product-specs">
+                        <div class="spec-item">
+                            <i class="fas fa-calendar-alt text-primary"></i>
+                            <span class="spec-label">Năm sản xuất</span>
+                            <span class="spec-value">@Model.NAMSX</span>
+                        </div>
+                        <div class="spec-item">
+                            <i class="fas fa-car text-success"></i>
+                            <span class="spec-label">Hãng xe</span>
+                            <span class="spec-value">@Model.HANGXE</span>
+                        </div>
+                        <div class="spec-item">
+                            <i class="fas fa-check-circle text-info"></i>
+                            <span class="spec-label">Trạng thái</span>
+                            <span class="spec-value">@Model.TRANGTHAI</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="product-actions">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <button class="btn btn-primary btn-lg w-100 mb-2" onclick="bookCar()">
+                                <i class="fas fa-hand-holding-usd me-2"></i>Đặt cọc ngay
+                            </button>
+                            <button class="btn btn-outline-secondary btn-lg w-100 mb-2" onclick="contactSales()">
+                                <i class="fas fa-phone me-2"></i>Liên hệ tư vấn
+                            </button>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Login", "Account", new { returnUrl = Request. Url.PathAndQuery })"
+                               class="btn btn-primary btn-lg w-100 mb-2">
+                                <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập để đặt cọc
+                            </a>
+                        }
+
+                        @if (User.Identity.IsAuthenticated &&
+                            (Session["RoleName"]?.ToString() == "ADMIN" || Session["RoleName"]?.ToString() == "MANAGER"))
+                        {
+                            <div class="admin-actions mt-3">
+                                <a href="@Url.Action("Edit", new { id = Model. MAXE })" class="btn btn-warning">
+                                    <i class="fas fa-edit me-2"></i>Sửa
+                                </a>
+                                <button class="btn btn-danger" onclick="confirmDelete(@Model.MAXE)">
+                                    <i class="fas fa-trash-alt me-2"></i>Xóa
+                                </button>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Features -->
+                    <div class="product-features">
+                        <h5 class="features-title">
+                            <i class="fas fa-star text-warning me-2"></i>Đặc điểm nổi bật
+                        </h5>
+                        <ul class="features-list">
+                            <li><i class="fas fa-check text-success me-2"></i>Bảo hành chính hãng 3 năm</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Hỗ trợ trả góp 0% lãi suất</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Tặng phụ kiện trị giá 10 triệu</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Miễn phí bảo hiểm 1 năm</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Giao xe tận nhà</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs: Description, Specs, Reviews -->
+        <div class="product-tabs mt-5">
+            <ul class="nav nav-tabs" id="productTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button">
+                        <i class="fas fa-info-circle me-2"></i>Mô tả
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs" type="button">
+                        <i class="fas fa-cogs me-2"></i>Thông số kỹ thuật
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button">
+                        <i class="fas fa-comments me-2"></i>Đánh giá (123)
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="productTabContent">
+                <!-- Description -->
+                <div class="tab-pane fade show active" id="description">
+                    <div class="tab-content-wrapper">
+                        <h4 class="mb-3">Mô tả sản phẩm</h4>
+                        @if (!string.IsNullOrEmpty(Model.MOTA))
+                        {
+                            <p>@Model.MOTA</p>
+                        }
+                        else
+                        {
+                            <p>Chưa có mô tả chi tiết. </p>
+                        }
+
+                        <div class="description-extra mt-4">
+                            <h5>Giới thiệu về @Model.TENXE</h5>
+                            <p>
+                                @Model.TENXE là dòng xe điện cao cấp của VinFast,
+                                được thiết kế hiện đại, công nghệ tiên tiến,
+                                mang đến trải nghiệm lái xe tuyệt vời cho người dùng Việt Nam.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Specifications -->
+                <div class="tab-pane fade" id="specs">
+                    <div class="tab-content-wrapper">
+                        <h4 class="mb-3">Thông số kỹ thuật</h4>
+                        <table class="table table-bordered specs-table">
+                            <tbody>
+                                <tr>
+                                    <td class="spec-label">Tên xe</td>
+                                    <td class="spec-value">@Model.TENXE</td>
+                                </tr>
+                                <tr>
+                                    <td class="spec-label">Hãng sản xuất</td>
+                                    <td class="spec-value">@Model.HANGXE</td>
+                                </tr>
+                                <tr>
+                                    <td class="spec-label">Năm sản xuất</td>
+                                    <td class="spec-value">@Model.NAMSX</td>
+                                </tr>
+                                <tr>
+                                    <td class="spec-label">Giá bán</td>
+                                    <td class="spec-value">@string.Format("{0:N0}", Model.GIA) đ</td>
+                                </tr>
+                                <tr>
+                                    <td class="spec-label">Trạng thái</td>
+                                    <td class="spec-value">@Model.TRANGTHAI</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Reviews -->
+                <div class="tab-pane fade" id="reviews">
+                    <div class="tab-content-wrapper">
+                        <h4 class="mb-3">Đánh giá từ khách hàng</h4>
+
+                        <!-- Review Summary -->
+                        <div class="review-summary mb-4">
+                            <div class="row">
+                                <div class="col-md-4 text-center">
+                                    <h1 class="rating-number">4.5</h1>
+                                    <div class="stars mb-2">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                    <p class="text-muted">123 đánh giá</p>
+                                </div>
+                                <div class="col-md-8">
+                                    <!-- Rating bars -->
+                                    <div class="rating-bar">
+                                        <span>5 <i class="fas fa-star"></i></span>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" style="width: 70%"></div>
+                                        </div>
+                                        <span>86</span>
+                                    </div>
+                                    <div class="rating-bar">
+                                        <span>4 <i class="fas fa-star"></i></span>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" style="width: 20%"></div>
+                                        </div>
+                                        <span>25</span>
+                                    </div>
+                                    <div class="rating-bar">
+                                        <span>3 <i class="fas fa-star"></i></span>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-warning" style="width: 7%"></div>
+                                        </div>
+                                        <span>9</span>
+                                    </div>
+                                    <div class="rating-bar">
+                                        <span>2 <i class="fas fa-star"></i></span>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-orange" style="width: 2%"></div>
+                                        </div>
+                                        <span>2</span>
+                                    </div>
+                                    <div class="rating-bar">
+                                        <span>1 <i class="fas fa-star"></i></span>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-danger" style="width: 1%"></div>
+                                        </div>
+                                        <span>1</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Review List -->
+                        <div class="reviews-list">
+                            <div class="review-item">
+                                <div class="reviewer-info">
+                                    <div class="reviewer-avatar">N</div>
+                                    <div class="reviewer-details">
+                                        <h6 class="reviewer-name">Nguyễn Văn A</h6>
+                                        <div class="review-stars">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                        <small class="review-date">15/11/2025</small>
+                                    </div>
+                                </div>
+                                <div class="review-content">
+                                    <p>Xe rất đẹp, vận hành êm ái. Tôi rất hài lòng với sự lựa chọn này! </p>
+                                </div>
+                            </div>
+
+                            <div class="review-item">
+                                <div class="reviewer-info">
+                                    <div class="reviewer-avatar">T</div>
+                                    <div class="reviewer-details">
+                                        <h6 class="reviewer-name">Trần Thị B</h6>
+                                        <div class="review-stars">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="far fa-star"></i>
+                                        </div>
+                                        <small class="review-date">10/11/2025</small>
+                                    </div>
+                                </div>
+                                <div class="review-content">
+                                    <p>Thiết kế hiện đại, công nghệ tốt. Hơi đắt nhưng đáng tiền! </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        @if (ViewBag.RelatedCars != null && ((List<WebCar.Models.CAR>)ViewBag.RelatedCars).Any())
+        {
+            <div class="related-products mt-5">
+                <h3 class="section-title mb-4">
+                    <i class="fas fa-car me-2"></i>Xe tương tự
+                </h3>
+                <div class="row g-4">
+                    @foreach (var car in (List<WebCar.Models.CAR>)ViewBag.RelatedCars)
+                    {
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <div class="product-card-mini">
+                                <div class="product-image-mini">
+                                    <img src="@Url.Content("~/" + car.HINHANH)" alt="@car.TENXE" />
+                                </div>
+                                <div class="product-content-mini">
+                                    <h6 class="product-title-mini">
+                                        <a href="@Url.Action("Details", new { id = car.MAXE })">@car.TENXE</a>
+                                    </h6>
+                                    <p class="product-price-mini">@string.Format("{0:N0}", car.GIA) đ</p>
+                                    <a href="@Url.Action("Details", new { id = car. MAXE })" class="btn btn-sm btn-outline-primary w-100">
+                                        Xem chi tiết
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận xóa
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa xe <strong>@Model.TENXE</strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Hành động này không thể hoàn tác!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                @using (Html.BeginForm("Delete", "Product", new { id = Model.MAXE }, FormMethod.Post, new { id = "deleteForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i>Xóa
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .product-details-page {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        /* Gallery */
+        .product-gallery . main-image {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .main-image img {
+            width: 100%;
+            height: 400px;
+            object-fit: contain;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .thumbnail {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+            .thumbnail:hover, .thumbnail.active {
+                border-color: #0d6efd;
+            }
+
+        /* Product Info */
+        .product-info-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .product-brand {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .product-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0 20px;
+        }
+
+        .product-rating . stars {
+            color: #ffc107;
+            font-size: 1.2rem;
+        }
+
+        . rating-text {
+            color: #6c757d;
+            margin-left: 10px;
+        }
+
+        .product-price-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .current-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            display: block;
+        }
+
+        .price-note {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.85rem;
+        }
+
+        /* Specifications */
+        .product-specs {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        . spec-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+            .spec-item:last-child {
+                border-bottom: none;
+            }
+
+            .spec-item i {
+                font-size: 1.5rem;
+            }
+
+        .spec-label {
+            color: #6c757d;
+            flex: 1;
+        }
+
+        .spec-value {
+            font-weight: 600;
+        }
+
+        /* Features */
+        .product-features {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff3cd;
+            border-radius: 12px;
+        }
+
+        .features-title {
+            margin-bottom: 15px;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+            .features-list li {
+                padding: 8px 0;
+            }
+
+        /* Tabs */
+        .product-tabs {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid #dee2e6;
+        }
+
+            .nav-tabs .nav-link {
+                border: none;
+                color: #6c757d;
+                font-weight: 600;
+                padding: 15px 25px;
+            }
+
+                .nav-tabs . nav-link.active {
+                    color: #0d6efd;
+                    border-bottom: 3px solid #0d6efd;
+                }
+
+        .tab-content-wrapper {
+            padding: 30px 0;
+        }
+
+        . specs-table td {
+            padding: 15px;
+        }
+
+        . specs-table . spec-label {
+            font-weight: 600;
+            width: 30%;
+            background: #f8f9fa;
+        }
+
+        /* Reviews */
+        .review-summary {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        .rating-number {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #ffc107;
+        }
+
+        .rating-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+            . rating-bar . progress {
+                flex: 1;
+                height: 8px;
+            }
+
+        .review-item {
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        . reviewer-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .reviewer-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        . review-stars {
+            color: #ffc107;
+        }
+
+        /* Related Products */
+        .product-card-mini {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+            .product-card-mini:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            }
+
+        .product-image-mini {
+            height: 150px;
+            overflow: hidden;
+        }
+
+            .product-image-mini img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+        .product-content-mini {
+            padding: 15px;
+        }
+
+        . product-title-mini a {
+            color: #212529;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        . product-price-mini {
+            color: #dc3545;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin: 10px 0;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function changeImage(src) {
+            document.getElementById('mainImage').src = src;
+            $('. thumbnail').removeClass('active');
+            event.target.classList.add('active');
+        }
+
+        function bookCar() {
+            alert('Chức năng đặt cọc sẽ được implement! ');
+        }
+
+        function contactSales() {
+            window.location.href = 'tel:1900232389';
+        }
+
+        function confirmDelete(carId) {
+            var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+    </script>
+}

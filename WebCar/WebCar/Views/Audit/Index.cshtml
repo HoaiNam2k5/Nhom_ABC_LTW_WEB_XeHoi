@@ -1,0 +1,428 @@
+﻿@model List<WebCar.Models.AUDIT_LOG>
+
+@{
+    ViewBag.Title = "Audit Logs";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="audit-page">
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2">
+                    <i class="fas fa-history text-primary me-2"></i>
+                    Nhật ký Audit
+                </h2>
+                <p class="text-muted mb-0">
+                    Theo dõi tất cả hoạt động trong hệ thống
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-success" onclick="exportLogs()">
+                    <i class="fas fa-file-excel me-2"></i>Xuất Excel
+                </button>
+                <a href="@Url.Action("Dashboard")" class="btn btn-info">
+                    <i class="fas fa-chart-pie me-2"></i>Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="card modern-card mb-4">
+            <div class="card-body">
+                @using (Html.BeginForm("Index", "Audit", FormMethod.Get, new { @class = "row g-3" }))
+                {
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-search me-1"></i>Hành động
+                        </label>
+                        <select name="action" class="form-select">
+                            <option value="">Tất cả</option>
+                            @if (ViewBag.Actions != null)
+                            {
+                                foreach (var action in ViewBag.Actions)
+                                {
+                                    <option value="@action" @(action == ViewBag.ActionFilter ? "selected" : "")>@action</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-calendar me-1"></i>Từ ngày
+                        </label>
+                        <input type="date" name="fromDate" class="form-control" value="@ViewBag.FromDate?.ToString(" yyyy-MM-dd")" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-calendar me-1"></i>Đến ngày
+                        </label>
+                        <input type="date" name="toDate" class="form-control" value="@ViewBag.ToDate?.ToString(" yyyy-MM-dd")" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-2"></i>Lọc
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="mini-stat mini-stat-1">
+                    <div class="mini-stat-icon">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="mini-stat-content">
+                        <h4>@Model.Count</h4>
+                        <p>Tổng logs</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="mini-stat mini-stat-2">
+                    <div class="mini-stat-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="mini-stat-content">
+                        <h4>@Model.Count(x => x.IsSecurityEvent)</h4>
+                        <p>Security events</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="mini-stat mini-stat-3">
+                    <div class="mini-stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="mini-stat-content">
+                        <h4>@Model.Count(x => x.IsCritical)</h4>
+                        <p>Critical</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="mini-stat mini-stat-4">
+                    <div class="mini-stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="mini-stat-content">
+                        <h4>@Model.Select(x => x.MATK).Distinct().Count()</h4>
+                        <p>Unique users</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="card modern-card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover audit-table mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px">#</th>
+                                <th>Hành động</th>
+                                <th>Người dùng</th>
+                                <th>Bảng</th>
+                                <th>IP Address</th>
+                                <th>Thời gian</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var log in Model)
+                                {
+                                    <tr class="@(log.IsCritical ? "table-danger-light" : "")">
+                                        <td>
+                                            <span class="log-id">#@log.MALOG</span>
+                                        </td>
+                                        <td>
+                                            <div class="action-cell">
+                                                <i class="@log.ActionIcon me-2"></i>
+                                                <span class="@log.StatusBadgeClass">@log.HANHDONG</span>
+                                                @if (log.IsSecurityEvent)
+                                                {
+                                                    <span class="badge bg-warning ms-2">
+                                                        <i class="fas fa-shield-alt"></i> Security
+                                                    </span>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <div class="user-avatar">
+                                                    @if (!string.IsNullOrEmpty(log.DisplayName))
+                                                    {
+                                                        @log.DisplayName.Substring(0, 1).ToUpper()
+                                                    }
+                                                    else
+                                                    {
+                                                        <text>S</text>
+                                                    }
+                                                </div>
+                                                <div>
+                                                    <strong>@log.DisplayName</strong>
+                                                    @if (!string.IsNullOrEmpty(log.CustomerEmail))
+                                                    {
+                                                        <br /><small class="text-muted">@log.CustomerEmail</small>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(log.BANGTACDONG))
+                                            {
+                                                <span class="badge bg-secondary">@log.BANGTACDONG</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(log.IP))
+                                            {
+                                                <code class="ip-code">@log.IP</code>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="time-cell">
+                                                <span class="time-ago" title="@log.FormattedDate">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    @log.TimeAgo
+                                                </span>
+                                                <br />
+                                                <small class="text-muted">@log.ShortDate @log.TimeOnly</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
+                                        <p class="text-muted">Không có dữ liệu</p>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            @if (ViewBag.TotalPages > 1)
+            {
+                <div class="card-footer bg-white">
+                    <nav>
+                        <ul class="pagination pagination-sm justify-content-center mb-0">
+                            <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new {
+                                    action = ViewBag.ActionFilter,
+                                    fromDate = ViewBag.FromDate,
+                                    toDate = ViewBag.ToDate,
+                                    page = ViewBag.CurrentPage - 1
+                                })">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new {
+                                        action = ViewBag.ActionFilter,
+                                        fromDate = ViewBag.FromDate,
+                                        toDate = ViewBag.ToDate,
+                                        page = i
+                                    })">@i</a>
+                                </li>
+                            }
+
+                            <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new {
+                                    action = ViewBag.ActionFilter,
+                                    fromDate = ViewBag.FromDate,
+                                    toDate = ViewBag.ToDate,
+                                    page = ViewBag.CurrentPage + 1
+                                })">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .audit-page {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .modern-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Mini Stats */
+        .mini-stat {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+            .mini-stat:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            }
+
+        .mini-stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+
+        .mini-stat-1 .mini-stat-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .mini-stat-2 .mini-stat-icon {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            color: white;
+        }
+
+        .mini-stat-3 .mini-stat-icon {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .mini-stat-4 .mini-stat-icon {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .mini-stat-content h4 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .mini-stat-content p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+
+        /* Audit Table */
+        .audit-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+            .audit-table thead th {
+                border: none;
+                padding: 15px;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 0.875rem;
+                letter-spacing: 0.5px;
+            }
+
+        .audit-table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+
+        .audit-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+            .audit-table tbody tr:hover {
+                background: #f8f9fa;
+            }
+
+        .table-danger-light {
+            background: rgba(220, 53, 69, 0.05);
+        }
+
+        .log-id {
+            font-weight: 600;
+            color: #6c757d;
+        }
+
+        .action-cell {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .ip-code {
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.875rem;
+        }
+
+        .time-cell {
+            font-size: 0.875rem;
+        }
+
+        .time-ago {
+            display: inline-block;
+            color: #495057;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function exportLogs() {
+            alert('Chức năng xuất Excel sẽ được implement!');
+        }
+    </script>
+}

@@ -1,0 +1,192 @@
+﻿@model List<WebCar.Models.ORDER_VIEW>
+
+@{
+    ViewBag.Title = "Quản lý đơn hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2 class="fw-bold">
+                <i class="fas fa-shopping-cart text-warning me-2"></i>Quản lý đơn hàng
+            </h2>
+            <p class="text-muted">Tổng số: <strong>@Model.Count</strong> đơn hàng</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <button class="btn btn-warning" onclick="exportOrders()">
+                <i class="fas fa-file-export me-2"></i>Xuất báo cáo
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            @using (Html.BeginForm("Orders", "Admin", FormMethod.Get, new { @class = "row g-3" }))
+            {
+                <div class="col-md-4">
+                    <select name="status" class="form-select">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="Chờ xử lý" @(ViewBag.StatusFilter == "Chờ xử lý" ? "selected" : "")>Chờ xử lý</option>
+                        <option value="Đang xử lý" @(ViewBag.StatusFilter == "Đang xử lý" ? "selected" : "")>Đang xử lý</option>
+                        <option value="Đã giao" @(ViewBag.StatusFilter == "Đã giao" ? "selected" : "")>Đã giao</option>
+                        <option value="Đã hủy" @(ViewBag.StatusFilter == "Đã hủy" ? "selected" : "")>Đã hủy</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-warning w-100">
+                        <i class="fas fa-filter me-2"></i>Lọc
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 100px">Mã đơn</th>
+                            <th>Khách hàng</th>
+                            <th style="width: 150px">Ngày đặt</th>
+                            <th style="width: 150px">Tổng tiền</th>
+                            <th style="width: 130px">Trạng thái</th>
+                            <th style="width: 120px" class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var order in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold">#@order.MADON</td>
+                                    <td>
+                                        <strong>@order.CustomerName</strong>
+                                        <br />
+                                        <small class="text-muted">
+                                            <i class="fas fa-envelope me-1"></i>@order.CustomerEmail
+                                        </small>
+                                        @if (!string.IsNullOrEmpty(order.CustomerPhone))
+                                        {
+                                            <br />
+                                            <small class="text-muted">
+                                                <i class="fas fa-phone me-1"></i>@order.CustomerPhone
+                                            </small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-calendar me-1 text-muted"></i>
+                                        @order.NGAYDAT.ToString("dd/MM/yyyy")
+                                        <br />
+                                        <small class="text-muted">@order.NGAYDAT.ToString("HH:mm")</small>
+                                    </td>
+                                    <td class="fw-bold text-danger">
+                                        @string.Format("{0:N0}", order.TONGTIEN) đ
+                                    </td>
+                                    <td>
+                                        @switch (order.TRANGTHAI)
+                                        {
+                                            case "Chờ xử lý":
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-clock"></i> @order.TRANGTHAI
+                                                </span>
+                                                break;
+                                            case "Đang xử lý":
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-spinner"></i> @order.TRANGTHAI
+                                                </span>
+                                                break;
+                                            case "Đã giao":
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle"></i> @order. TRANGTHAI
+                                                </span>
+                                                break;
+                                            case "Đã hủy":
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-times-circle"></i> @order. TRANGTHAI
+                                                </span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">@order.TRANGTHAI</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-outline-info" onclick="viewOrder(@order. MADON)" title="Xem">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-success" onclick="updateStatus(@order.MADON)" title="Cập nhật">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <i class="fas fa-shopping-cart fa-3x text-muted mb-3 d-block"></i>
+                                    <p class="text-muted">Không có đơn hàng nào</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        @if (ViewBag.TotalPages > 1)
+        {
+            <div class="card-footer bg-white">
+                <nav>
+                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                        <li class="page-item @(ViewBag. CurrentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Orders", new { status = ViewBag.StatusFilter, page = ViewBag.CurrentPage - 1 })">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Orders", new { status = ViewBag. StatusFilter, page = i })">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Orders", new { status = ViewBag.StatusFilter, page = ViewBag.CurrentPage + 1 })">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function viewOrder(id) {
+            alert('Xem chi tiết đơn hàng #' + id);
+        }
+
+        function updateStatus(id) {
+            alert('Cập nhật trạng thái đơn hàng #' + id);
+        }
+
+        function exportOrders() {
+            alert('Xuất báo cáo đơn hàng');
+        }
+    </script>
+}

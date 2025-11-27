@@ -1,0 +1,134 @@
+﻿@{
+    ViewBag.Title = "Truy cập bị từ chối";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="access-denied-page">
+    <div class="container">
+        <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+            <div class="col-md-6 text-center">
+                <div class="error-content">
+                    <!-- Error Icon -->
+                    <div class="error-icon mb-4">
+                        <i class="fas fa-ban"></i>
+                    </div>
+
+                    <!-- Error Code -->
+                    <h1 class="error-code mb-3">403</h1>
+
+                    <!-- Error Message -->
+                    <h2 class="error-title mb-3">Truy cập bị từ chối</h2>
+                    <p class="error-description mb-4">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Xin lỗi, bạn không có quyền truy cập vào trang này.
+                    </p>
+
+                    <!-- User Info -->
+                    @if (Session["CustomerName"] != null)
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Tài khoản hiện tại:</strong> @Session["CustomerName"]
+                            <br />
+                            <strong>Vai trò:</strong> @(Session["RoleName"] ??  "CUSTOMER")
+                        </div>
+                    }
+
+                    <!-- Reasons -->
+                    <div class="alert alert-warning text-start mb-4">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-lightbulb me-2"></i>Nguyên nhân có thể:
+                        </h6>
+                        <ul class="mb-0">
+                            <li>Bạn chưa đăng nhập</li>
+                            <li>Tài khoản của bạn không có quyền truy cập</li>
+                            <li>Tài khoản đã bị khóa hoặc hết hạn</li>
+                            <li>Bạn cần vai trò ADMIN hoặc MANAGER</li>
+                        </ul>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-lg">
+                            <i class="fas fa-home me-2"></i>Về trang chủ
+                        </a>
+
+                        @if (Session["CustomerName"] == null)
+                        {
+                            <a href="@Url.Action("Login", "Account")" class="btn btn-success btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("MyProfile", "Account")" class="btn btn-info btn-lg">
+                                <i class="fas fa-user me-2"></i>Trang cá nhân
+                            </a>
+                        }
+
+                        <a href="javascript:history.back()" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Quay lại
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .access-denied-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        . error-content {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .error-icon {
+            font-size: 6rem;
+            color: #dc3545;
+            animation: shake 0.5s ease-in-out;
+        }
+
+   
+
+        .error-code {
+            font-size: 5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .error-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .error-description {
+            font-size: 1.1rem;
+            color: #6c757d;
+        }
+
+        .alert {
+            border-radius: 12px;
+        }
+
+        . btn-lg {
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 10px;
+        }
+
+      
+    </style>
+}

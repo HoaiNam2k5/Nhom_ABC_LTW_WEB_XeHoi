@@ -1,0 +1,427 @@
+﻿@model WebCar.Models.CAR
+
+@{
+    ViewBag.Title = "Sửa thông tin xe";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="product-form-page">
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2">
+                    <i class="fas fa-edit text-warning me-2"></i>
+                    Sửa thông tin xe
+                </h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Admin")">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Product")">Sản phẩm</a></li>
+                        <li class="breadcrumb-item active">Sửa #@Model.MAXE</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="@Url.Action("Details", new { id = Model.MAXE })" class="btn btn-outline-info">
+                    <i class="fas fa-eye me-2"></i>Xem chi tiết
+                </a>
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                </a>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card modern-card">
+                    <div class="card-header bg-transparent border-0 py-3">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            Thông tin xe - ID: #@Model.MAXE
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @using (Html.BeginForm("Edit", "Product", FormMethod.Post, new { enctype = "multipart/form-data", @class = "needs-validation" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.HiddenFor(m => m.MAXE)
+                            @Html.HiddenFor(m => m.HINHANH)
+
+                            <!-- Validation Summary -->
+                            if (!ViewData.ModelState.IsValid)
+                            {
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Có lỗi xảy ra:</strong>
+                                    @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            }
+
+                            <!-- Tên xe -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold required">
+                                    <i class="fas fa-car text-primary me-1"></i>Tên xe
+                                </label>
+                                @Html.TextBoxFor(m => m.TENXE, new
+                                {
+                                    @class = "form-control form-control-lg",
+                                    placeholder = "VD: VinFast VF 8 Plus",
+                                    required = "required"
+                                })
+                                @Html.ValidationMessageFor(m => m.TENXE, "", new { @class = "text-danger small d-block mt-1" })
+                            </div>
+
+                            <div class="row">
+                                <!-- Hãng xe -->
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label fw-bold required">
+                                        <i class="fas fa-tag text-success me-1"></i>Hãng xe
+                                    </label>
+                                    @Html.DropDownListFor(m => m.HANGXE,
+                                        new SelectList(ViewBag.Brands, Model.HANGXE),
+                                        "-- Chọn hãng --",
+                                        new { @class = "form-select form-select-lg" })
+                                    @Html.ValidationMessageFor(m => m. HANGXE, "", new { @class = "text-danger small d-block mt-1" })
+                                </div>
+
+                                <!-- Năm sản xuất -->
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label fw-bold required">
+                                        <i class="fas fa-calendar-alt text-info me-1"></i>Năm sản xuất
+                                    </label>
+                                    @Html.TextBoxFor(m => m.NAMSX, new
+                                    {
+                                        @class = "form-control form-control-lg",
+                                        type = "number",
+                                        min = "2020",
+                                        max = DateTime.Now.Year + 1
+                                    })
+                                    @Html.ValidationMessageFor(m => m.NAMSX, "", new { @class = "text-danger small d-block mt-1" })
+                                </div>
+                            </div>
+
+                            <!-- Giá -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold required">
+                                    <i class="fas fa-dollar-sign text-warning me-1"></i>Giá bán (VNĐ)
+                                </label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                    </span>
+                                    @Html.TextBoxFor(m => m.GIA, new
+                                    {
+                                        @class = "form-control",
+                                        type = "number",
+                                        step = "1000000",
+                                        id = "priceInput"
+                                    })
+                                    <span class="input-group-text">đ</span>
+                                </div>
+                                @Html.ValidationMessageFor(m => m. GIA, "", new { @class = "text-danger small d-block mt-1" })
+                                <small class="form-text text-muted">
+                                    Giá hiển thị: <strong id="priceDisplay">@string.Format("{0:N0}", Model.GIA ?? 0) đ</strong>
+                                </small>
+                            </div>
+
+                            <!-- Mô tả -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-align-left text-secondary me-1"></i>Mô tả
+                                </label>
+                                @Html.TextAreaFor(m => m.MOTA, new
+                                {
+                                    @class = "form-control",
+                                    rows = 5,
+                                    id = "descriptionInput"
+                                })
+                                @Html.ValidationMessageFor(m => m. MOTA, "", new { @class = "text-danger small d-block mt-1" })
+                                <small class="form-text text-muted">
+                                    Số ký tự: <span id="charCount">@(Model.MOTA?.Length ??  0)</span> / 1000
+                                </small>
+                            </div>
+
+                            <!-- Trạng thái -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-toggle-on text-success me-1"></i>Trạng thái
+                                </label>
+                                <div class="btn-group w-100" role="group">
+                                    @{
+                                        var isConHang = Model.TRANGTHAI == "Còn hàng";
+                                        var isHetHang = Model.TRANGTHAI == "Hết hàng";
+                                        var isSapVe = Model.TRANGTHAI == "Sắp về";
+                                    }
+
+                                    <input type="radio" class="btn-check" name="TRANGTHAI" id="status1" value="Còn hàng" @(isConHang ? "checked" : "")>
+                                    <label class="btn btn-outline-success" for="status1">
+                                        <i class="fas fa-check-circle me-2"></i>Còn hàng
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="TRANGTHAI" id="status2" value="Hết hàng" @(isHetHang ? "checked" : "")>
+                                    <label class="btn btn-outline-danger" for="status2">
+                                        <i class="fas fa-times-circle me-2"></i>Hết hàng
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="TRANGTHAI" id="status3" value="Sắp về" @(isSapVe ? "checked" : "")>
+                                    <label class="btn btn-outline-warning" for="status3">
+                                        <i class="fas fa-clock me-2"></i>Sắp về
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Hình ảnh hiện tại -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-image text-primary me-1"></i>Hình ảnh
+                                </label>
+
+                                <!-- Current Image -->
+                                <div class="current-image mb-3">
+                                    <img src="@Url.Content("~/" + Model.HINHANH)"
+                                         alt="@Model.TENXE"
+                                         class="img-thumbnail"
+                                         style="max-height: 200px;"
+                                         onerror="this.src='@Url.Content(" ~ /images/cars/default.jpg")'" />
+                                    <p class="text-muted small mt-2">Hình ảnh hiện tại</p>
+                                </div>
+
+                                <!-- Upload New Image -->
+                                <div class="image-upload-wrapper">
+                                    <input type="file"
+                                           name="imageFile"
+                                           id="imageFile"
+                                           accept="image/*"
+                                           class="form-control"
+                                           onchange="previewImage(event)" />
+
+                                    <div class="image-preview mt-3" id="imagePreview" style="display: none;">
+                                        <img id="preview" src="" alt="Preview" />
+                                        <button type="button" class="btn btn-sm btn-danger remove-image" onclick="removeImage()">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Để trống nếu không muốn thay đổi hình ảnh
+                                </small>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="@Url.Action("Details", new { id = Model.MAXE })" class="btn btn-secondary btn-lg">
+                                    <i class="fas fa-times me-2"></i>Hủy
+                                </a>
+                                <button type="reset" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-undo me-2"></i>Đặt lại
+                                </button>
+                                <button type="submit" class="btn btn-warning btn-lg">
+                                    <i class="fas fa-save me-2"></i>Lưu thay đổi
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar: Info -->
+            <div class="col-lg-4">
+                <!-- Change History -->
+                <div class="card modern-card mb-4">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Thông tin
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <i class="fas fa-hashtag text-primary me-2"></i>
+                            <span class="info-label">ID:</span>
+                            <span class="info-value">#@Model.MAXE</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-calendar-plus text-success me-2"></i>
+                            <span class="info-label">Ngày tạo:</span>
+                            <span class="info-value">N/A</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-calendar-check text-info me-2"></i>
+                            <span class="info-label">Cập nhật:</span>
+                            <span class="info-value">Đang sửa</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card modern-card">
+                    <div class="card-header bg-danger text-white py-3">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Hành động nguy hiểm
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small mb-3">
+                            Hành động này không thể hoàn tác
+                        </p>
+                        <button type="button" class="btn btn-danger w-100" onclick="confirmDelete(@Model.MAXE)">
+                            <i class="fas fa-trash-alt me-2"></i>Xóa xe này
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận xóa
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa xe <strong>@Model.TENXE</strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Hành động này không thể hoàn tác!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                @using (Html.BeginForm("Delete", "Product", new { id = Model.MAXE }, FormMethod.Post, new { id = "deleteForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i>Xóa
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Reuse styles from Create. cshtml */
+        .product-form-page {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .modern-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .required::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        .image-upload-wrapper {
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .image-preview {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+            .image-preview img {
+                width: 100%;
+                max-height: 300px;
+                object-fit: contain;
+            }
+
+        .remove-image {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .info-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+        }
+
+            .info-item:last-child {
+                border-bottom: none;
+            }
+
+        .info-label {
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .info-value {
+            color: #6c757d;
+            margin-left: auto;
+        }
+    </style>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        $(document).ready(function() {
+            // Price formatting
+            $('#priceInput'). on('input', function() {
+                var value = $(this).val();
+                if (value) {
+                    var formatted = parseInt(value).toLocaleString('vi-VN');
+                    $('#priceDisplay').text(formatted + ' đ');
+                } else {
+                    $('#priceDisplay').text('0 đ');
+                }
+            });
+
+            // Character count
+            $('#descriptionInput').on('input', function() {
+                var length = $(this).val().length;
+                $('#charCount').text(length);
+
+                if (length > 1000) {
+                    $('#charCount').addClass('text-danger');
+                } else {
+                    $('#charCount').removeClass('text-danger');
+                }
+            });
+        });
+
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function() {
+                var output = document. getElementById('preview');
+                output.src = reader.result;
+                $('#imagePreview').show();
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function removeImage() {
+            $('#imageFile').val('');
+            $('#imagePreview').hide();
+        }
+
+        function confirmDelete(carId) {
+            var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+    </script>
+}

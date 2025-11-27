@@ -1,0 +1,446 @@
+﻿
+
+@model WebCar.Models.CUSTOMER
+
+@{
+    ViewBag.Title = "Hồ sơ của tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="profile-section py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+    <div class="container">
+        <div class="row">
+            <!-- Left Sidebar -->
+            <div class="col-lg-4 mb-4">
+                <!-- Profile Card -->
+                <div class="card shadow-lg border-0 mb-4">
+                    <div class="card-body text-center p-4">
+                        <!-- Avatar -->
+                        <div class="avatar-wrapper mb-3">
+                            <div class="avatar-circle mx-auto">
+                                @{
+                                    var firstLetter = !string.IsNullOrEmpty(Model.HOTEN) ? Model.HOTEN.Substring(0, 1).ToUpper() : "U";
+                                }
+                                <span class="avatar-text">@firstLetter</span>
+                            </div>
+                            <button class="btn btn-sm btn-light avatar-change-btn" title="Đổi ảnh đại diện">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                        </div>
+
+                        <!-- User Info -->
+                        <h4 class="fw-bold mb-1">@Model.HOTEN</h4>
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-envelope me-1"></i>@Model.EMAIL
+                        </p>
+                        <p class="text-muted mb-3">
+                            <i class="fas fa-user-tag me-1"></i>
+                            @(Session["RoleName"]?.ToString() ??  "CUSTOMER")
+                        </p>
+
+                        <!-- Stats -->
+                        <div class="row text-center border-top pt-3">
+                            <div class="col-6 border-end">
+                                <h5 class="text-primary mb-0">@ViewBag.ActivityCount</h5>
+                                <small class="text-muted">Hoạt động</small>
+                            </div>
+                            <div class="col-6">
+                                <h5 class="text-success mb-0">
+                                    @if (Model.NGAYDANGKY.HasValue)
+                                    {
+                                        var days = (DateTime.Now - Model.NGAYDANGKY.Value).Days;
+                                        @days
+                                    }
+                                    else
+                                    {
+                                        <text>0</text>
+                                    }
+                                </h5>
+                                <small class="text-muted">Ngày tham gia</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card shadow-lg border-0">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="fas fa-bolt text-warning me-2"></i>Thao tác nhanh
+                        </h6>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="@Url.Action("MyOrders", "Order")" class="list-group-item list-group-item-action">
+                            <i class="fas fa-shopping-bag text-primary me-2"></i>
+                            Đơn hàng của tôi
+                        </a>
+                        <a href="@Url.Action("ChangePassword", "Account")" class="list-group-item list-group-item-action">
+                            <i class="fas fa-key text-warning me-2"></i>
+                            Đổi mật khẩu
+                        </a>
+                        <a href="@Url.Action("Index", "Product")" class="list-group-item list-group-item-action">
+                            <i class="fas fa-car text-success me-2"></i>
+                            Xem xe
+                        </a>
+                        <button type="button" class="list-group-item list-group-item-action text-danger" onclick="confirmLogout()">
+                            <i class="fas fa-sign-out-alt me-2"></i>
+                            Đăng xuất
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Content -->
+            <div class="col-lg-8">
+                <!-- Personal Information -->
+                <div class="card shadow-lg border-0 mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-user-circle text-primary me-2"></i>Thông tin cá nhân
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        @using (Html.BeginForm("UpdateProfile", "Account", FormMethod.Post, new { @class = "needs-validation", id = "profileForm" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.HiddenFor(m => m.MAKH)
+
+                            <div class="row">
+                                <!-- Họ tên -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-user text-primary me-1"></i>Họ tên
+                                    </label>
+                                    @Html.TextBoxFor(m => m.HOTEN, new
+                                    {
+                                        @class = "form-control",
+                                        placeholder = "Nhập họ tên",
+                                        required = "required"
+                                    })
+                                    @Html.ValidationMessageFor(m => m.HOTEN, "", new { @class = "text-danger small d-block mt-1" })
+                                </div>
+
+                                <!-- Email (readonly) -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-envelope text-primary me-1"></i>Email
+                                    </label>
+                                    @Html.TextBoxFor(m => m.EMAIL, new
+                                    {
+                                        @class = "form-control bg-light",
+                                        @readonly = "readonly",
+                                        title = "Email không thể thay đổi"
+                                    })
+                                    <small class="text-muted">Email không thể thay đổi</small>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <!-- Số điện thoại -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-phone text-primary me-1"></i>Số điện thoại
+                                    </label>
+                                    @Html.TextBoxFor(m => m.SDT, new
+                                    {
+                                        @class = "form-control",
+                                        placeholder = "0901234567",
+                                        type = "tel"
+                                    })
+                                    @Html.ValidationMessageFor(m => m.SDT, "", new { @class = "text-danger small d-block mt-1" })
+                                </div>
+
+                                <!-- Ngày đăng ký (readonly) -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-calendar-alt text-primary me-1"></i>Ngày đăng ký
+                                    </label>
+                                    <input type="text" class="form-control bg-light" readonly
+                                           value="@(Model.NGAYDANGKY.HasValue ? Model.NGAYDANGKY.Value.ToString("dd/MM/yyyy") : "N/A")" />
+                                </div>
+                            </div>
+
+                            <!-- Địa chỉ -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-map-marker-alt text-primary me-1"></i>Địa chỉ
+                                </label>
+                                @Html.TextAreaFor(m => m.DIACHI, new
+                                {
+                                    @class = "form-control",
+                                    rows = 3,
+                                    placeholder = "123 Nguyễn Huệ, Q1, TPHCM"
+                                })
+                                @Html.ValidationMessageFor(m => m.DIACHI, "", new { @class = "text-danger small d-block mt-1" })
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="d-flex gap-2 justify-content-end">
+                                <button type="reset" class="btn btn-outline-secondary">
+                                    <i class="fas fa-undo me-2"></i>Đặt lại
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Lưu thay đổi
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Account Security -->
+                <div class="card shadow-lg border-0 mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-shield-alt text-success me-2"></i>Bảo mật tài khoản
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                            <div>
+                                <h6 class="mb-1">Mật khẩu</h6>
+                                <small class="text-muted">Đổi mật khẩu định kỳ để bảo mật tài khoản</small>
+                            </div>
+                            <a href="@Url.Action("ChangePassword", "Account")" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-key me-1"></i>Đổi mật khẩu
+                            </a>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                            <div>
+                                <h6 class="mb-1">Xác thực hai yếu tố</h6>
+                                <small class="text-muted">Tăng cường bảo mật với xác thực 2 lớp</small>
+                            </div>
+                            <button class="btn btn-outline-secondary btn-sm" disabled>
+                                <i class="fas fa-lock me-1"></i>Sắp có
+                            </button>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Thiết bị đăng nhập</h6>
+                                <small class="text-muted">Quản lý các thiết bị đã đăng nhập</small>
+                            </div>
+                            <button class="btn btn-outline-secondary btn-sm" disabled>
+                                <i class="fas fa-desktop me-1"></i>Sắp có
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card shadow-lg border-0">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-history text-info me-2"></i>Hoạt động gần đây
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item d-flex align-items-center">
+                                <div class="activity-icon bg-success text-white me-3">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Đăng nhập thành công</h6>
+                                    <small class="text-muted">Hôm nay lúc @DateTime.Now. ToString("HH:mm")</small>
+                                </div>
+                                <span class="badge bg-success">Mới</span>
+                            </div>
+
+                            <div class="list-group-item d-flex align-items-center">
+                                <div class="activity-icon bg-primary text-white me-3">
+                                    <i class="fas fa-user-edit"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Cập nhật thông tin</h6>
+                                    <small class="text-muted">
+                                        @if (Model.NGAYDANGKY.HasValue)
+                                        {
+                                            @Model.NGAYDANGKY.Value.ToString("dd/MM/yyyy HH:mm")
+                                        }
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="list-group-item text-center py-3">
+                                <a href="@Url.Action("Index", "Audit")" class="text-primary text-decoration-none">
+                                    <i class="fas fa-clock-rotate-left me-2"></i>Xem tất cả hoạt động
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Logout Confirmation Modal -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">
+                    <i class="fas fa-sign-out-alt text-danger me-2"></i>Xác nhận đăng xuất
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Bạn có chắc chắn muốn đăng xuất khỏi tài khoản không? </p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Hủy
+                </button>
+                @using (Html.BeginForm("Logout", "Account", FormMethod.Post, new { id = "logoutForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        $(document).ready(function () {
+
+            // Confirm before reset
+            $('button[type="reset"]').click(function (e) {
+                if (!confirm('Bạn có chắc muốn đặt lại form?')) {
+                    e.preventDefault();
+                }
+            });
+
+            // Form tracking
+            let formChanged = false;
+            $('#profileForm input, #profileForm textarea').on('change', function () {
+                formChanged = true;
+            });
+
+            $(window).on('beforeunload', function () {
+                if (formChanged) {
+                    return 'Bạn có thay đổi chưa lưu. Bạn có chắc muốn rời trang?';
+                }
+            });
+
+            $('#profileForm').on('submit', function () {
+                formChanged = false;
+            });
+
+            // Auto fade alert
+            setTimeout(function () {
+                $('.alert-success').fadeOut('slow');
+            }, 5000);
+
+            // Phone number
+            $('#SDT').on('input', function () {
+                let value = $(this).val().replace(/\D/g, '');
+                if (value.startsWith('84')) {
+                    value = '0' + value.substring(2);
+                }
+                $(this).val(value);
+            });
+
+            // Avatar click
+            $('.avatar-change-btn').click(function () {
+                alert('Chức năng đổi ảnh đại diện sẽ được cập nhật sau!');
+            });
+        });
+
+        function confirmLogout() {
+            const modal = new bootstrap.Modal(document.getElementById('logoutModal'));
+            modal.show();
+        }
+    </script>
+
+
+    <style>
+    .profile-section {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+
+    .card {
+        border-radius: 15px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .avatar-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .avatar-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .avatar-text {
+        font-size: 3rem;
+        font-weight: bold;
+        color: white;
+    }
+
+    .avatar-change-btn {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+
+    .list-group-item-action:hover {
+        background-color: #f8f9fa;
+        transform: translateX(5px);
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .bg-light {
+        cursor: not-allowed;
+    }
+
+
+        .avatar-text {
+            font-size: 2.5rem; /* fixed spacing error */
+        }
+    }
+    </style>
+}

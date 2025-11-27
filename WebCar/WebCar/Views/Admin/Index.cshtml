@@ -1,0 +1,670 @@
+﻿@{
+    ViewBag.Title = "Admin Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="admin-dashboard">
+    <div class="container-fluid py-4">
+        <!-- Welcome Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="welcome-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="fw-bold mb-2">
+                                <i class="fas fa-tachometer-alt text-primary me-3"></i>
+                                Chào mừng trở lại, @Session["CustomerName"]!
+                            </h1>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                @DateTime.Now.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                                <span class="mx-2">|</span>
+                                <i class="fas fa-clock me-2"></i>
+                                <span id="currentTime">@DateTime.Now.ToString("HH:mm:ss")</span>
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end d-none d-md-block">
+                            <img src="https://img.icons8.com/clouds/200/000000/admin-settings-male.png" alt="Admin" style="width: 120px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row g-4 mb-4">
+            <!-- Total Cars -->
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-card-1">
+                    <div class="stats-card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="stats-label">Tổng số xe</p>
+                                <h2 class="stats-value mb-2">@ViewBag.TotalCars</h2>
+                                <div class="stats-trend">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+12% so với tháng trước</span>
+                                </div>
+                            </div>
+                            <div class="stats-icon stats-icon-1">
+                                <i class="fas fa-car"></i>
+                            </div>
+                        </div>
+                        <div class="stats-progress">
+                            <div class="progress">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 75%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="@Url.Action("Cars")" class="stats-footer">
+                        Xem chi tiết <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Total Customers -->
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-card-2">
+                    <div class="stats-card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="stats-label">Khách hàng</p>
+                                <h2 class="stats-value mb-2">@ViewBag.TotalCustomers</h2>
+                                <div class="stats-trend text-success">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+8% so với tháng trước</span>
+                                </div>
+                            </div>
+                            <div class="stats-icon stats-icon-2">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="stats-progress">
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 60%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="@Url.Action("Customers")" class="stats-footer">
+                        Xem chi tiết <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Total Orders -->
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-card-3">
+                    <div class="stats-card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="stats-label">Đơn hàng</p>
+                                <h2 class="stats-value mb-2">@ViewBag.TotalOrders</h2>
+                                <div class="stats-trend text-warning">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+15% so với tháng trước</span>
+                                </div>
+                            </div>
+                            <div class="stats-icon stats-icon-3">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                        </div>
+                        <div class="stats-progress">
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 85%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="@Url.Action("Orders")" class="stats-footer">
+                        Xem chi tiết <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Total Revenue -->
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card stats-card-4">
+                    <div class="stats-card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="stats-label">Doanh thu</p>
+                                <h2 class="stats-value mb-2">@string.Format("{0:N0}", ViewBag.TotalRevenue / 1000000)M</h2>
+                                <div class="stats-trend text-danger">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+23% so với tháng trước</span>
+                                </div>
+                            </div>
+                            <div class="stats-icon stats-icon-4">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                        <div class="stats-progress">
+                            <div class="progress">
+                                <div class="progress-bar bg-danger" role="progressbar" style="width: 90%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="@Url.Action("Orders")" class="stats-footer">
+                        Xem chi tiết <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Quick Actions -->
+            <div class="col-lg-4">
+                <div class="card modern-card h-100">
+                    <div class="card-header bg-transparent border-0 pb-0">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-bolt text-warning me-2"></i>
+                            Thao tác nhanh
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-actions">
+                            <a href="@Url.Action("Cars")" class="quick-action-item">
+                                <div class="quick-action-icon bg-primary-light">
+                                    <i class="fas fa-car text-primary"></i>
+                                </div>
+                                <div class="quick-action-content">
+                                    <h6 class="mb-0">Quản lý xe</h6>
+                                    <small class="text-muted">Thêm, sửa, xóa xe</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </a>
+
+                            <a href="@Url.Action("Customers")" class="quick-action-item">
+                                <div class="quick-action-icon bg-success-light">
+                                    <i class="fas fa-users text-success"></i>
+                                </div>
+                                <div class="quick-action-content">
+                                    <h6 class="mb-0">Khách hàng</h6>
+                                    <small class="text-muted">Quản lý khách hàng</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </a>
+
+                            <a href="@Url.Action("Orders")" class="quick-action-item">
+                                <div class="quick-action-icon bg-warning-light">
+                                    <i class="fas fa-shopping-cart text-warning"></i>
+                                </div>
+                                <div class="quick-action-content">
+                                    <h6 class="mb-0">Đơn hàng</h6>
+                                    <small class="text-muted">Xử lý đơn hàng</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </a>
+
+                            <a href="@Url.Action("Users")" class="quick-action-item">
+                                <div class="quick-action-icon bg-info-light">
+                                    <i class="fas fa-user-shield text-info"></i>
+                                </div>
+                                <div class="quick-action-content">
+                                    <h6 class="mb-0">Người dùng</h6>
+                                    <small class="text-muted">Phân quyền</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </a>
+
+                            <a href="@Url.Action("Index", "Audit")" class="quick-action-item">
+                                <div class="quick-action-icon bg-secondary-light">
+                                    <i class="fas fa-history text-secondary"></i>
+                                </div>
+                                <div class="quick-action-content">
+                                    <h6 class="mb-0">Audit Logs</h6>
+                                    <small class="text-muted">Nhật ký hoạt động</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </a>
+
+                            <a href="@Url.Action("Security")" class="quick-action-item">
+                                <div class="quick-action-icon bg-danger-light">
+                                    <i class="fas fa-shield-alt text-danger"></i>
+                                </div>
+                                <div class="quick-action-content">
+                                    <h6 class="mb-0">Bảo mật</h6>
+                                    <small class="text-muted">Cài đặt bảo mật</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="col-lg-4">
+                <div class="card modern-card h-100">
+                    <div class="card-header bg-transparent border-0 pb-0">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-server text-success me-2"></i>
+                            Trạng thái hệ thống
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="system-status-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">CPU Usage</span>
+                                <span class="badge bg-success">45%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 45%"></div>
+                            </div>
+                        </div>
+
+                        <div class="system-status-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">Memory Usage</span>
+                                <span class="badge bg-info">62%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-info" role="progressbar" style="width: 62%"></div>
+                            </div>
+                        </div>
+
+                        <div class="system-status-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">Disk Space</span>
+                                <span class="badge bg-warning">78%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 78%"></div>
+                            </div>
+                        </div>
+
+                        <div class="system-status-item mb-0">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">Database Load</span>
+                                <span class="badge bg-primary">38%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 38%"></div>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <div class="alert alert-success mb-0" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Hệ thống hoạt động bình thường
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="col-lg-4">
+                <div class="card modern-card h-100">
+                    <div class="card-header bg-transparent border-0 pb-0">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-bell text-danger me-2"></i>
+                            Hoạt động gần đây
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="activity-timeline">
+                            <div class="activity-item">
+                                <div class="activity-icon bg-success">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h6 class="mb-1">Khách hàng mới</h6>
+                                    <p class="mb-1 text-muted small">Nguyễn Văn A đã đăng ký</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>5 phút trước
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="activity-icon bg-primary">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h6 class="mb-1">Đơn hàng mới</h6>
+                                    <p class="mb-1 text-muted small">Đơn #12345 - VF8 Plus</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>15 phút trước
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="activity-icon bg-warning">
+                                    <i class="fas fa-car"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h6 class="mb-1">Cập nhật xe</h6>
+                                    <p class="mb-1 text-muted small">VF9 Plus - Giảm giá 5%</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>1 giờ trước
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="activity-icon bg-info">
+                                    <i class="fas fa-comment"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h6 class="mb-1">Feedback mới</h6>
+                                    <p class="mb-1 text-muted small">Đánh giá 5 sao cho VF5</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>2 giờ trước
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="activity-item mb-0">
+                                <div class="activity-icon bg-secondary">
+                                    <i class="fas fa-cog"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h6 class="mb-1">Cập nhật hệ thống</h6>
+                                    <p class="mb-1 text-muted small">Backup database thành công</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>3 giờ trước
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Dashboard Styles */
+        .admin-dashboard {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        /* Welcome Card */
+        .welcome-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 30px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Stats Cards */
+        .stats-card {
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            background: white;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .stats-card-body {
+            padding: 25px;
+        }
+
+        .stats-label {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .stats-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stats-trend {
+            font-size: 0.875rem;
+            color: #28a745;
+        }
+
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stats-icon-1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stats-icon-2 {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            color: white;
+        }
+
+        .stats-icon-3 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .stats-icon-4 {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .stats-progress {
+            margin-top: 15px;
+        }
+
+        .stats-progress .progress {
+            height: 5px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+        }
+
+        .stats-footer {
+            display: block;
+            padding: 15px 25px;
+            background: #f8f9fa;
+            color: #495057;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .stats-footer:hover {
+            background: #e9ecef;
+            color: #212529;
+        }
+
+        /* Modern Card */
+        .modern-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .modern-card:hover {
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quick-action-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 12px;
+            background: #f8f9fa;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .quick-action-item:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateX(10px);
+        }
+
+        .quick-action-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        .bg-primary-light {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .bg-success-light {
+            background: rgba(86, 171, 47, 0.1);
+        }
+
+        .bg-warning-light {
+            background: rgba(255, 193, 7, 0.1);
+        }
+
+        .bg-info-light {
+            background: rgba(13, 202, 240, 0.1);
+        }
+
+        .bg-secondary-light {
+            background: rgba(108, 117, 125, 0.1);
+        }
+
+        .bg-danger-light {
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .quick-action-content {
+            flex: 1;
+        }
+
+        .quick-action-content h6 {
+            margin-bottom: 2px;
+            font-weight: 600;
+        }
+
+        /* System Status */
+        .system-status-item {
+            margin-bottom: 20px;
+        }
+
+        .system-status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Activity Timeline */
+        .activity-timeline {
+            position: relative;
+        }
+
+        .activity-item {
+            display: flex;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .activity-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .activity-item::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 40px;
+            width: 2px;
+            height: calc(100% + 20px);
+            background: #e9ecef;
+        }
+
+        .activity-item:last-child::before {
+            display: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .activity-content h6 {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+
+        .stats-card {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .stats-card:nth-child(1) { animation-delay: 0.1s; }
+        .stats-card:nth-child(2) { animation-delay: 0.2s; }
+        .stats-card:nth-child(3) { animation-delay: 0.3s; }
+        .stats-card:nth-child(4) { animation-delay: 0.4s; }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Live clock
+        setInterval(function () {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('vi-VN');
+            document.getElementById('currentTime').textContent = timeString;
+        }, 1000);
+
+        // Counter animation
+        function animateCounter(element, target) {
+            let current = 0;
+            const increment = target / 100;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, 20);
+        }
+
+        // Initialize counters on page load
+        $(document).ready(function () {
+            $('.stats-value').each(function () {
+                const value = parseInt($(this).text().replace(/[^0-9]/g, ''));
+                if (!isNaN(value)) {
+                    animateCounter(this, value);
+                }
+            });
+        });
+    </script>
+}

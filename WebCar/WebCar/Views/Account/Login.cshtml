@@ -1,0 +1,178 @@
+﻿
+
+@model WebCar.Models.ViewModels.LoginViewModel
+
+@{
+    ViewBag.Title = "Đăng nhập";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="login-section py-5" style="min-height: 80vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card shadow-lg border-0">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <h2 class="fw-bold text-primary">
+                                <i class="fas fa-user-circle me-2"></i>Đăng nhập
+                            </h2>
+                            <p class="text-muted">Đăng nhập để trải nghiệm đầy đủ</p>
+                        </div>
+
+                        @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "needs-validation", novalidate = "novalidate" }))
+                        {
+                            @Html.AntiForgeryToken()
+
+                            @* Display validation summary *@
+                            if (!ViewData.ModelState.IsValid)
+                            {
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            }
+
+                            @* Email field *@
+                            <div class="mb-3">
+                                @Html.LabelFor(m => m.Email, new { @class = "form-label fw-bold" })
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="fas fa-envelope text-primary"></i>
+                                    </span>
+                                    @Html.TextBoxFor(m => m.Email, new
+                                    {
+                                        @class = "form-control",
+                                        placeholder = "email@example.com",
+                                        type = "email",
+                                        autocomplete = "email",
+                                        required = "required"
+                                    })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small d-block mt-1" })
+                            </div>
+
+                            @* Password field *@
+                            <div class="mb-3">
+                                @Html.LabelFor(m => m.Password, new { @class = "form-label fw-bold" })
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="fas fa-lock text-primary"></i>
+                                    </span>
+                                    @Html.PasswordFor(m => m.Password, new
+                                    {
+                                        @class = "form-control",
+                                        placeholder = "Nhập mật khẩu",
+                                        autocomplete = "current-password",
+                                        required = "required"
+                                    })
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="fas fa-eye" id="eyeIcon"></i>
+                                    </button>
+                                </div>
+                                @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small d-block mt-1" })
+                            </div>
+
+                            @* Remember me checkbox *@
+                            <div class="mb-3 form-check">
+                                @Html.CheckBoxFor(m => m.RememberMe, new { @class = "form-check-input" })
+                                @Html.LabelFor(m => m.RememberMe, new { @class = "form-check-label" })
+                            </div>
+
+                            @* Submit button *@
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                                </button>
+                            </div>
+
+                            @* Forgot password link *@
+                            <div class="text-center mb-3">
+                                <a href="#" class="text-muted small">Quên mật khẩu?</a>
+                            </div>
+
+                            @* Register link *@
+                            <hr class="my-3">
+                            <div class="text-center">
+                                <p class="mb-0">
+                                    Chưa có tài khoản?
+                                    <a href="@Url.Action("Register", "Account")" class="text-primary fw-bold text-decoration-none">
+                                        Đăng ký ngay
+                                    </a>
+                                </p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @* Additional info *@
+                <div class="text-center mt-4 text-white">
+                    <p class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Thông tin của bạn được bảo mật tuyệt đối
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        $(document).ready(function () {
+            // Toggle password visibility
+            $('#togglePassword').click(function () {
+                const passwordField = $('#Password');
+                const eyeIcon = $('#eyeIcon');
+                const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
+                passwordField.attr('type', type);
+                eyeIcon.toggleClass('fa-eye fa-eye-slash');
+            });
+
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function () {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+
+            // Focus on email field when page loads
+            $('#Email').focus();
+        });
+    </script>
+
+    <style>
+        .login-section {
+            display: flex;
+            align-items: center;
+        }
+
+        .card {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .input-group-text {
+            min-width: 45px;
+            justify-content: center;
+        }
+
+        .btn-lg {
+            padding: 12px;
+            font-size: 1.1rem;
+        }
+
+        #togglePassword {
+            border-left: 0;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .alert {
+            border-radius: 10px;
+        }
+    </style>
+}

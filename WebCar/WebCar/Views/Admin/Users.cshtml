@@ -1,0 +1,818 @@
+﻿@model List<WebCar.Data.CustomerWithRole>
+
+@{
+    ViewBag.Title = "Quản lý người dùng & Phân quyền";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="users-management-page">
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h2 class="fw-bold mb-2">
+                    <i class="fas fa-users-cog text-primary me-2"></i>
+                    Quản lý người dùng & Phân quyền
+                </h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Admin")">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Người dùng</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="col-md-6 text-end">
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <i class="fas fa-user-plus me-2"></i>Thêm người dùng
+                </button>
+                <button class="btn btn-info" onclick="exportUsers()">
+                    <i class="fas fa-file-excel me-2"></i>Xuất Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="role-stat-card stat-admin">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">@Model.Count(x => x.ROLENAME == "ADMIN")</h3>
+                        <p class="stat-label">Administrators</p>
+                        <div class="stat-footer">
+                            <span class="badge bg-danger">Toàn quyền</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="role-stat-card stat-manager">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">@Model.Count(x => x.ROLENAME == "MANAGER")</h3>
+                        <p class="stat-label">Managers</p>
+                        <div class="stat-footer">
+                            <span class="badge bg-primary">Quản lý</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="role-stat-card stat-sales">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-tag"></i>
+                        </div>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">@Model.Count(x => x.ROLENAME == "SALES")</h3>
+                        <p class="stat-label">Sales</p>
+                        <div class="stat-footer">
+                            <span class="badge bg-warning">Bán hàng</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="role-stat-card stat-customer">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">@Model.Count(x => x.ROLENAME == "CUSTOMER")</h3>
+                        <p class="stat-label">Customers</p>
+                        <div class="stat-footer">
+                            <span class="badge bg-secondary">Khách hàng</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search & Filter -->
+        <div class="card modern-card mb-4">
+            <div class="card-body">
+                <form method="get" action="@Url.Action("Users", "Admin")" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-search text-primary"></i> Tìm kiếm
+                        </label>
+                        <input type="text" name="search" class="form-control" placeholder="Tên, email, SĐT..." value="@ViewBag.SearchTerm" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-filter text-success"></i> Vai trò
+                        </label>
+                        <select name="role" class="form-select">
+                            <option value="">Tất cả vai trò</option>
+                            <option value="ADMIN" @(ViewBag.RoleFilter == "ADMIN" ? "selected" : "")>ADMIN</option>
+                            <option value="MANAGER" @(ViewBag.RoleFilter == "MANAGER" ? "selected" : "")>MANAGER</option>
+                            <option value="SALES" @(ViewBag.RoleFilter == "SALES" ? "selected" : "")>SALES</option>
+                            <option value="CUSTOMER" @(ViewBag.RoleFilter == "CUSTOMER" ? "selected" : "")>CUSTOMER</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-sort text-info"></i> Sắp xếp
+                        </label>
+                        <select name="sort" class="form-select">
+                            <option value="name">Tên A-Z</option>
+                            <option value="date">Mới nhất</option>
+                            <option value="role">Vai trò</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>Tìm
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="card modern-card">
+            <div class="card-header bg-transparent border-0 py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list text-primary me-2"></i>
+                        Danh sách người dùng (@Model.Count)
+                    </h5>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary active" onclick="viewMode('table')">
+                            <i class="fas fa-table"></i> Bảng
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="viewMode('grid')">
+                            <i class="fas fa-th"></i> Lưới
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover users-table mb-0" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px">
+                                    <input type="checkbox" class="form-check-input" id="selectAll" onclick="toggleSelectAll()" />
+                                </th>
+                                <th style="width: 80px">ID</th>
+                                <th>Người dùng</th>
+                                <th>Email</th>
+                                <th>SĐT</th>
+                                <th style="width: 130px">Vai trò</th>
+                                <th style="width: 130px">Ngày tạo</th>
+                                <th style="width: 100px">Trạng thái</th>
+                                <th style="width: 180px" class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var user in Model)
+                                {
+                                    // ✅ FIX: Use traditional if-else instead of switch expression
+                                    string roleClass;
+                                    string roleIcon;
+
+                                    if (user.ROLENAME == "ADMIN")
+                                    {
+                                        roleClass = "danger";
+                                        roleIcon = "fa-user-shield";
+                                    }
+                                    else if (user.ROLENAME == "MANAGER")
+                                    {
+                                        roleClass = "primary";
+                                        roleIcon = "fa-user-tie";
+                                    }
+                                    else if (user.ROLENAME == "SALES")
+                                    {
+                                        roleClass = "warning";
+                                        roleIcon = "fa-user-tag";
+                                    }
+                                    else
+                                    {
+                                        roleClass = "secondary";
+                                        roleIcon = "fa-user";
+                                    }
+
+                                    <tr data-user-id="@user.MAKH">
+                                        <td>
+                                            <input type="checkbox" class="form-check-input user-checkbox" value="@user.MAKH" />
+                                        </td>
+                                        <td>
+                                            <span class="user-id-badge">#@user.MAKH</span>
+                                        </td>
+                                        <td>
+                                            <div class="user-info-cell">
+                                                <div class="user-avatar-circle bg-@roleClass">
+                                                    @user.HOTEN.Substring(0, 1).ToUpper()
+                                                </div>
+                                                <div class="user-details">
+                                                    <strong class="user-name">@user.HOTEN</strong>
+                                                    <small class="text-muted d-block">ID: @user.MAKH</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-envelope text-muted me-2"></i>
+                                            <span class="user-email">@user.EMAIL</span>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(user.SDT))
+                                            {
+                                                <i class="fas fa-phone text-muted me-2"></i>
+                                                <span>@user.SDT</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-@roleClass role-badge">
+                                                <i class="fas @roleIcon me-1"></i>
+                                                @user.ROLENAME
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (user.NGAYDANGKY.HasValue)
+                                            {
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar-alt me-1"></i>
+                                                    @user.NGAYDANGKY.Value.ToString("dd/MM/yyyy")
+                                                </small>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success status-badge">
+                                                <i class="fas fa-check-circle"></i> Active
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-primary"
+                                                        onclick="viewUser(@user.MAKH)"
+                                                        title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-success"
+                                                        onclick="editRole(@user.MAKH, '@user.HOTEN', '@user.ROLENAME')"
+                                                        title="Đổi vai trò">
+                                                    <i class="fas fa-user-edit"></i>
+                                                </button>
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-info"
+                                                        onclick="viewActivity(@user.MAKH)"
+                                                        title="Lịch sử">
+                                                    <i class="fas fa-history"></i>
+                                                </button>
+                                                @if (user.ROLENAME != "ADMIN")
+                                                {
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            onclick="blockUser(@user.  MAKH, '@user. HOTEN')"
+                                                            title="Khóa">
+                                                        <i class="fas fa-ban"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="9" class="text-center py-5">
+                                        <i class="fas fa-users-slash fa-3x text-muted mb-3 d-block"></i>
+                                        <p class="text-muted">Không có người dùng nào</p>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div class="card-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted">Đã chọn: <strong id="selectedCount">0</strong> người dùng</span>
+                    </div>
+                    <div class="btn-group btn-group-sm" id="bulkActions" style="display: none;">
+                        <button class="btn btn-primary" onclick="bulkChangeRole()">
+                            <i class="fas fa-users-cog me-1"></i>Đổi vai trò
+                        </button>
+                        <button class="btn btn-warning" onclick="bulkExport()">
+                            <i class="fas fa-download me-1"></i>Xuất
+                        </button>
+                        <button class="btn btn-danger" onclick="bulkBlock()">
+                            <i class="fas fa-ban me-1"></i>Khóa
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== MODALS ========== -->
+<!-- Edit Role Modal -->
+<div class="modal fade" id="editRoleModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-edit me-2"></i>Đổi vai trò người dùng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editUserId" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Người dùng:</label>
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        <strong id="editUserName"></strong>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Vai trò hiện tại:</label>
+                    <div class="alert alert-secondary mb-0">
+                        <i class="fas fa-id-badge me-2"></i>
+                        <strong id="editCurrentRole"></strong>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Vai trò mới:</label>
+                    <select id="editNewRole" class="form-select form-select-lg">
+                        <option value="CUSTOMER">
+                            <i class="fas fa-user"></i> CUSTOMER - Khách hàng
+                        </option>
+                        <option value="SALES">
+                            <i class="fas fa-user-tag"></i> SALES - Nhân viên bán hàng
+                        </option>
+                        <option value="MANAGER">
+                            <i class="fas fa-user-tie"></i> MANAGER - Quản lý
+                        </option>
+                        <option value="ADMIN">
+                            <i class="fas fa-user-shield"></i> ADMIN - Quản trị viên
+                        </option>
+                    </select>
+                    <small class="form-text text-muted">
+                        <i class="fas fa-info-circle"></i> Chọn vai trò phù hợp với quyền hạn cần gán
+                    </small>
+                </div>
+
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Lưu ý:</strong> Thay đổi vai trò sẽ ảnh hưởng đến quyền truy cập của người dùng!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveRoleChange()">
+                    <i class="fas fa-save me-2"></i>Lưu thay đổi
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View User Details Modal -->
+<div class="modal fade" id="viewUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-circle me-2"></i>Chi tiết người dùng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="userDetailsContent">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus me-2"></i>Thêm người dùng mới
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addUserForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Họ tên</label>
+                        <input type="text" class="form-control" name="hoten" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Email</label>
+                        <input type="email" class="form-control" name="email" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Số điện thoại</label>
+                        <input type="tel" class="form-control" name="sdt" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mật khẩu</label>
+                        <input type="password" class="form-control" name="password" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Vai trò</label>
+                        <select class="form-select" name="role" required>
+                            <option value="CUSTOMER">CUSTOMER</option>
+                            <option value="SALES">SALES</option>
+                            <option value="MANAGER">MANAGER</option>
+                            <option value="ADMIN">ADMIN</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>Tạo người dùng
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        . users-management-page {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .modern-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        /* Role Statistics Cards */
+        .role-stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .role-stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            opacity: 0.1;
+            transition: all 0.3s ease;
+        }
+
+        .role-stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .role-stat-card:hover::before {
+            transform: scale(1.5);
+        }
+
+        .stat-admin::before { background: #dc3545; }
+        .stat-manager::before { background: #0d6efd; }
+        .stat-sales::before { background: #ffc107; }
+        .stat-customer::before { background: #6c757d; }
+
+        .stat-icon-wrapper {
+            margin-right: 20px;
+        }
+
+        .stat-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .stat-admin .stat-icon { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
+        .stat-manager .stat-icon { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); }
+        .stat-sales .stat-icon { background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); }
+        .stat-customer .stat-icon { background: linear-gradient(135deg, #6c757d 0%, #545b62 100%); }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        . stat-footer {
+            margin-top: 10px;
+        }
+
+        /* Users Table */
+        .users-table {
+            font-size: 0.9rem;
+        }
+
+        .users-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .users-table thead th {
+            border: none;
+            padding: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        . users-table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+
+        .users-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .users-table tbody tr:hover {
+            background: #f8f9fa;
+            transform: translateX(3px);
+        }
+
+        . user-id-badge {
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        . user-info-cell {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar-circle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .user-name {
+            font-size: 0.95rem;
+            color: #212529;
+        }
+
+        .role-badge {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            font-size: 0.75rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .action-buttons . btn {
+            padding: 5px 10px;
+        }
+
+      
+        .role-stat-card {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        . role-stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .role-stat-card:nth-child(2) { animation-delay: 0.2s; }
+        . role-stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .role-stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+        /* Modal Enhancements */
+        .modal-content {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            border: none;
+            padding: 20px 25px;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        . modal-footer {
+            border: none;
+            padding: 15px 25px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Edit Role
+        function editRole(userId, userName, currentRole) {
+            document.getElementById('editUserId').value = userId;
+            document.getElementById('editUserName').textContent = userName;
+            document. getElementById('editCurrentRole').textContent = currentRole;
+            document.getElementById('editNewRole').value = currentRole;
+
+            var modal = new bootstrap.Modal(document.getElementById('editRoleModal'));
+            modal.show();
+        }
+
+        // Save Role Change
+        function saveRoleChange() {
+            var userId = document.getElementById('editUserId').value;
+            var newRole = document.getElementById('editNewRole').value;
+
+            // TODO: Implement AJAX call
+            $. ajax({
+                url: '@Url.Action("ChangeRole", "Admin")',
+                type: 'POST',
+                data: {
+                    userId: userId,
+                    newRole: newRole,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('✅ Đổi vai trò thành công!');
+                        location.reload();
+                    } else {
+                        alert('❌ Lỗi: ' + response. message);
+                    }
+                },
+                error: function() {
+                    alert('❌ Có lỗi xảy ra!');
+                }
+            });
+        }
+
+        // View User Details
+        function viewUser(userId) {
+            var modal = new bootstrap.Modal(document.getElementById('viewUserModal'));
+            modal.show();
+
+            // TODO: Load user details via AJAX
+            $('#userDetailsContent').html('<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>');
+
+            setTimeout(function() {
+                $('#userDetailsContent').html(`
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Thông tin cá nhân</h6>
+                            <p><strong>ID:</strong> ${userId}</p>
+                            <p><strong>Tên:</strong> User Name</p>
+                            <p><strong>Email:</strong> email@example.com</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Thống kê</h6>
+                            <p><strong>Đơn hàng:</strong> 5</p>
+                            <p><strong>Hoạt động:</strong> 120</p>
+                        </div>
+                    </div>
+                `);
+            }, 1000);
+        }
+
+        // View Activity
+        function viewActivity(userId) {
+            window.location.href = '@Url.Action("Index", "Audit")?userId=' + userId;
+        }
+
+        // Block User
+        function blockUser(userId, userName) {
+            if (confirm(`Bạn có chắc muốn khóa tài khoản "${userName}"?`)) {
+                alert('Chức năng khóa tài khoản sẽ được implement! ');
+            }
+        }
+
+        // Select All
+        function toggleSelectAll() {
+            var checked = $('#selectAll').prop('checked');
+            $('. user-checkbox').prop('checked', checked);
+            updateSelectedCount();
+        }
+
+        // Update Selected Count
+        function updateSelectedCount() {
+            var count = $('.user-checkbox:checked'). length;
+            $('#selectedCount'). text(count);
+            $('#bulkActions').toggle(count > 0);
+        }
+
+        $('. user-checkbox').on('change', updateSelectedCount);
+
+        // Bulk Actions
+        function bulkChangeRole() {
+            alert('Bulk change role for selected users');
+        }
+
+        function bulkExport() {
+            alert('Export selected users');
+        }
+
+        function bulkBlock() {
+            if (confirm('Khóa tất cả người dùng đã chọn?')) {
+                alert('Bulk block users');
+            }
+        }
+
+        // Export Users
+        function exportUsers() {
+            alert('Export all users to Excel');
+        }
+
+        // View Mode
+        function viewMode(mode) {
+            if (mode === 'grid') {
+                alert('Grid view coming soon!');
+            }
+        }
+
+        // Add User Form
+        $('#addUserForm').on('submit', function(e) {
+            e.preventDefault();
+            alert('Add new user functionality will be implemented!');
+        });
+    </script>
+}

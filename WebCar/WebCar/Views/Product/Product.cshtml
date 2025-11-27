@@ -1,0 +1,209 @@
+﻿
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cửa hàng Xe hơi</title>
+
+    <link href="~/Content/CSS/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap-icons-1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="~/Content/CSS/datcoc.css" rel="stylesheet" />
+
+</head>
+<body>
+
+    <header class="header">
+        <div class="container header-content">
+            <a class="navbar-brand" href="@Url.Action("Index", "Home")">
+                <img src="~/images/logo.png" class="logo-highlight" alt="VinFast" height="50">
+            </a>
+
+            <button style="background-color:aqua;" class="order-history-btn" data-bs-toggle="modal" data-bs-target="#order-history-modal">
+                <i class="bi bi-receipt-cutoff" style="color:red;"></i> Đơn hàng của bạn
+            </button>
+        </div>
+    </header>
+
+    <div class="container my-5">
+        <div class="row">
+            <aside class="col-lg-3">
+                <div class="sidebar">
+                    <h5 class="sidebar-title">Lọc sản phẩm</h5>
+                    <div id="price-filter" class="filter-group mb-4">
+                        <h6>Mức giá</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="price-range" id="price-all" value="all" checked>
+                            <label class="form-check-label" for="price-all">Tất cả</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="price-range" id="price-1" value="0-550">
+                            <label class="form-check-label" for="price-1">Dưới 550 triệu</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="price-range" id="price-2" value="550-700">
+                            <label class="form-check-label" for="price-2">550 - 700 triệu</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="price-range" id="price-3" value="700-1000">
+                            <label class="form-check-label" for="price-3">Trên 700 triệu</label>
+                        </div>
+                    </div>
+                    <div id="category-filter" class="filter-group">
+                        <h6>Loại xe</h6>
+                        <button class="filter-btn active" data-category="all">Tất cả</button>
+                        <button class="filter-btn" data-category="E-SUV">E-SUV</button>
+                        <button class="filter-btn" data-category="D-SUV">D-SUV</button>
+                        <button class="filter-btn" data-category="C-SUV">C-SUV</button>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="col-lg-9">
+                <div class="search-bar mb-4">
+                    <input type="search" id="search-input" class="form-control form-control-lg" placeholder="Tìm kiếm theo tên xe...">
+                </div>
+                <div class="row" id="product-list">
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="cart-icon" data-bs-toggle="modal" data-bs-target="#cart-modal">
+        <i class="bi bi-cart-fill"></i>
+        <div class="cart-count" id="cart-count">0</div>
+    </div>
+
+    <div class="modal fade" id="cart-modal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cartModalLabel"><i class="bi bi-cart3"></i> Giỏ Hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="cart-items-container"></div>
+                </div>
+                <div class="modal-footer justify-content-between align-items-center">
+                    <h5 class="mb-0">Tổng cộng: <span id="cart-subtotal" class="text-danger fw-bold">0₫</span></h5>
+                    <button id="show-checkout-btn" class="btn btn-danger btn-lg">Tiến hành thanh toán</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="checkout-modal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="checkoutModalLabel"><i class="bi bi-credit-card"></i> Thông tin thanh toán</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-4">
+                        <div class="col-lg-7">
+                            <h5 class="fw-bold mb-3">1. Thông tin khách hàng</h5>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6"><input type="text" class="form-control" placeholder="Họ và tên (*)" id="customer-name"></div>
+                                <div class="col-md-6"><input type="text" class="form-control" placeholder="Số điện thoại (*)" id="customer-phone"></div>
+                            </div>
+                            <div class="mb-4"><input type="email" class="form-control" placeholder="Email (*)" id="customer-email"></div>
+
+                            <h5 class="fw-bold mt-4 mb-3">2. Hình thức nhận hàng</h5>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="deliveryMethod" id="store-pickup" value="store" checked>
+                                <label class="form-check-label" for="store-pickup">Nhận tại cửa hàng</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="deliveryMethod" id="home-delivery" value="delivery">
+                                <label class="form-check-label" for="home-delivery">Giao hàng tận nơi</label>
+                            </div>
+                            <div id="delivery-info" class="mt-3" style="display: none;">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <select class="form-select" id="customer-city">
+                                            <option value="">Tỉnh/Thành phố (*)</option>
+                                            <option value="HCM">Hồ Chí Minh</option>
+                                            <option value="HN">Hà Nội</option>
+                                            <option value="BD">Bình Dương</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6"><select class="form-select" id="customer-district"><option value="">Quận/Huyện (*)</option></select></div>
+                                </div>
+                                <div class="mb-3"><input type="text" class="form-control" placeholder="Địa chỉ chi tiết (*)" id="customer-address"></div>
+                            </div>
+
+                            <h5 class="fw-bold mt-4 mb-3">3. Hình thức thanh toán</h5>
+                            <div class="payment-method-group">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="payment-cod" value="Thanh toán khi nhận hàng" checked>
+                                    <label class="form-check-label w-100" for="payment-cod"><i class="bi bi-truck"></i> Thanh toán khi nhận hàng (COD)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="payment-momo" value="Chuyển khoản MoMo">
+                                    <label class="form-check-label w-100" for="payment-momo"><i class="bi bi-qr-code"></i> Chuyển khoản MoMo</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="payment-card" value="Thanh toán qua thẻ">
+                                    <label class="form-check-label w-100" for="payment-card"><i class="bi bi-credit-card-2-front"></i> Thanh toán qua thẻ (Visa, Mastercard)</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="bg-light p-4 rounded-3 position-sticky" style="top:20px;">
+                                <h5 class="fw-bold mb-3">Đơn hàng của bạn</h5>
+                                <div id="checkout-items-summary"></div>
+                                <hr>
+                                <div class="d-flex justify-content-between fw-bold fs-5">
+                                    <span>Tổng cộng:</span>
+                                    <span id="checkout-total" class="text-danger">0₫</span>
+                                </div>
+                                <div class="d-grid mt-4">
+                                    <button class="btn btn-danger btn-lg" onclick="validateAndCompleteOrder()">HOÀN TẤT ĐẶT HÀNG</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="notification-modal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="notification-title">Thông báo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="notification-message" style="white-space: pre-wrap;"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Đã hiểu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="order-history-modal" tabindex="-1" aria-labelledby="orderHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orderHistoryModalLabel"><i class="bi bi-receipt-cutoff"></i> Lịch sử đơn hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="accordion" id="order-history-accordion">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  
+
+    <script src="~/Content/JS/bootstrap.bundle.min.js"></script>
+    <script src="~/Content/JS/bootstrap.bundle.js"></script>
+    <script src="~/Content/JS/datcoc.js"></script>
+</body>
+</html>

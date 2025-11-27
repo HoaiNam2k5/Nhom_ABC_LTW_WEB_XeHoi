@@ -1,0 +1,487 @@
+﻿@model WebCar.Models.CAR
+
+@{
+    ViewBag.Title = "Thêm xe mới";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="product-form-page">
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2">
+                    <i class="fas fa-plus-circle text-success me-2"></i>
+                    Thêm xe mới
+                </h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Admin")">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Product")">Sản phẩm</a></li>
+                        <li class="breadcrumb-item active">Thêm mới</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                </a>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card modern-card">
+                    <div class="card-header bg-transparent border-0 py-3">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            Thông tin xe
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @using (Html.BeginForm("Create", "Product", FormMethod.Post, new { enctype = "multipart/form-data", @class = "needs-validation" }))
+                        {
+                            @Html.AntiForgeryToken()
+
+                            <!-- Validation Summary -->
+                            if (!ViewData.ModelState.IsValid)
+                            {
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Có lỗi xảy ra:</strong>
+                                    @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            }
+
+                            <!-- Tên xe -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold required">
+                                    <i class="fas fa-car text-primary me-1"></i>Tên xe
+                                </label>
+                                @Html.TextBoxFor(m => m.TENXE, new
+                                {
+                                    @class = "form-control form-control-lg",
+                                    placeholder = "VD: VinFast VF 8 Plus",
+                                    required = "required"
+                                })
+                                @Html.ValidationMessageFor(m => m.TENXE, "", new { @class = "text-danger small d-block mt-1" })
+                                <small class="form-text text-muted">Nhập tên đầy đủ của xe</small>
+                            </div>
+
+                            <div class="row">
+                                <!-- Hãng xe -->
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label fw-bold required">
+                                        <i class="fas fa-tag text-success me-1"></i>Hãng xe
+                                    </label>
+                                    @Html.DropDownListFor(m => m.HANGXE,
+                                        new SelectList(ViewBag.Brands),
+                                        "-- Chọn hãng --",
+                                        new { @class = "form-select form-select-lg", id = "brandSelect" })
+                                    @Html.ValidationMessageFor(m => m.HANGXE, "", new { @class = "text-danger small d-block mt-1" })
+
+                                    <!-- Custom brand input -->
+                                    <div class="mt-2" id="customBrandDiv" style="display: none;">
+                                        <input type="text" id="customBrand" class="form-control" placeholder="Nhập hãng mới..." />
+                                        <small class="text-muted">Hoặc nhập hãng mới</small>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-link p-0 mt-1" onclick="toggleCustomBrand()">
+                                        <i class="fas fa-plus-circle me-1"></i>Thêm hãng mới
+                                    </button>
+                                </div>
+
+                                <!-- Năm sản xuất -->
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label fw-bold required">
+                                        <i class="fas fa-calendar-alt text-info me-1"></i>Năm sản xuất
+                                    </label>
+                                    @Html.TextBoxFor(m => m.NAMSX, new
+                                    {
+                                        @class = "form-control form-control-lg",
+                                        type = "number",
+                                        min = "2020",
+                                        max = DateTime.Now.Year + 1,
+                                        placeholder = DateTime.Now.Year.ToString()
+                                    })
+                                    @Html.ValidationMessageFor(m => m.NAMSX, "", new { @class = "text-danger small d-block mt-1" })
+                                </div>
+                            </div>
+
+                            <!-- Giá -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold required">
+                                    <i class="fas fa-dollar-sign text-warning me-1"></i>Giá bán (VNĐ)
+                                </label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                    </span>
+                                    @Html.TextBoxFor(m => m.GIA, new
+                                    {
+                                        @class = "form-control",
+                                        type = "number",
+                                        step = "1000000",
+                                        placeholder = "500000000",
+                                        id = "priceInput"
+                                    })
+                                    <span class="input-group-text">đ</span>
+                                </div>
+                                @Html.ValidationMessageFor(m => m.GIA, "", new { @class = "text-danger small d-block mt-1" })
+                                <small class="form-text text-muted">
+                                    Giá hiển thị: <strong id="priceDisplay">0 đ</strong>
+                                </small>
+                            </div>
+
+                            <!-- Mô tả -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-align-left text-secondary me-1"></i>Mô tả
+                                </label>
+                                @Html.TextAreaFor(m => m.MOTA, new
+                                {
+                                    @class = "form-control",
+                                    rows = 5,
+                                    placeholder = "Nhập mô tả chi tiết về xe.. .",
+                                    id = "descriptionInput"
+                                })
+                                @Html.ValidationMessageFor(m => m.MOTA, "", new { @class = "text-danger small d-block mt-1" })
+                                <small class="form-text text-muted">
+                                    Số ký tự: <span id="charCount">0</span> / 1000
+                                </small>
+                            </div>
+
+                            <!-- Trạng thái -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-toggle-on text-success me-1"></i>Trạng thái
+                                </label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="TRANGTHAI" id="status1" value="Còn hàng" checked>
+                                    <label class="btn btn-outline-success" for="status1">
+                                        <i class="fas fa-check-circle me-2"></i>Còn hàng
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="TRANGTHAI" id="status2" value="Hết hàng">
+                                    <label class="btn btn-outline-danger" for="status2">
+                                        <i class="fas fa-times-circle me-2"></i>Hết hàng
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="TRANGTHAI" id="status3" value="Sắp về">
+                                    <label class="btn btn-outline-warning" for="status3">
+                                        <i class="fas fa-clock me-2"></i>Sắp về
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Hình ảnh -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold required">
+                                    <i class="fas fa-image text-primary me-1"></i>Hình ảnh
+                                </label>
+                                <div class="image-upload-wrapper">
+                                    <input type="file"
+                                           name="imageFile"
+                                           id="imageFile"
+                                           accept="image/*"
+                                           class="form-control"
+                                           onchange="previewImage(event)" />
+
+                                    <div class="image-preview mt-3" id="imagePreview" style="display: none;">
+                                        <img id="preview" src="" alt="Preview" />
+                                        <button type="button" class="btn btn-sm btn-danger remove-image" onclick="removeImage()">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Chấp nhận: JPG, PNG, GIF.  Kích thước tối đa: 5MB
+                                </small>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="@Url.Action("Index")" class="btn btn-secondary btn-lg">
+                                    <i class="fas fa-times me-2"></i>Hủy
+                                </a>
+                                <button type="reset" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-undo me-2"></i>Đặt lại
+                                </button>
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-save me-2"></i>Thêm xe
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar: Tips -->
+            <div class="col-lg-4">
+                <!-- Tips Card -->
+                <div class="card modern-card mb-4">
+                    <div class="card-header bg-info text-white py-3">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-lightbulb me-2"></i>Hướng dẫn
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="tips-list">
+                            <li>
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Nhập tên xe đầy đủ và chính xác
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Chọn hãng xe từ danh sách có sẵn
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Nhập giá bán chính xác (VNĐ)
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Mô tả chi tiết để thu hút khách hàng
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Upload hình ảnh chất lượng cao
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Chọn trạng thái phù hợp
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Preview Card -->
+                <div class="card modern-card">
+                    <div class="card-header bg-warning text-dark py-3">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-eye me-2"></i>Xem trước
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="preview-card">
+                            <div class="preview-image" id="previewCardImage">
+                                <i class="fas fa-image fa-3x text-muted"></i>
+                            </div>
+                            <div class="preview-content">
+                                <small class="preview-brand" id="previewBrand">Hãng xe</small>
+                                <h6 class="preview-title" id="previewTitle">Tên xe</h6>
+                                <p class="preview-price" id="previewPrice">0 đ</p>
+                                <span class="badge bg-success" id="previewStatus">Còn hàng</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .product-form-page {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        . modern-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .required::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        /* Image Upload */
+        .image-upload-wrapper {
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+            .image-upload-wrapper:hover {
+                border-color: #667eea;
+                background: #f8f9fa;
+            }
+
+        . image-preview {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+            .image-preview img {
+                width: 100%;
+                max-height: 300px;
+                object-fit: contain;
+                border-radius: 12px;
+            }
+
+        . remove-image {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        /* Tips List */
+        .tips-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+            .tips-list li {
+                padding: 8px 0;
+                font-size: 0.9rem;
+            }
+
+        /* Preview Card */
+        .preview-card {
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .preview-image {
+            height: 150px;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .preview-image img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+        .preview-content {
+            padding: 15px;
+        }
+
+        . preview-brand {
+            color: #6c757d;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        . preview-title {
+            font-weight: 600;
+            margin: 5px 0;
+        }
+
+        .preview-price {
+            color: #dc3545;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+    </style>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        $(document).ready(function() {
+            // Price formatting
+            $('#priceInput').on('input', function() {
+                var value = $(this).val();
+                if (value) {
+                    var formatted = parseInt(value).toLocaleString('vi-VN');
+                    $('#priceDisplay').text(formatted + ' đ');
+                    $('#previewPrice').text(formatted + ' đ');
+                } else {
+                    $('#priceDisplay'). text('0 đ');
+                    $('#previewPrice').text('0 đ');
+                }
+            });
+
+            // Character count
+            $('#descriptionInput'). on('input', function() {
+                var length = $(this).val().length;
+                $('#charCount').text(length);
+
+                if (length > 1000) {
+                    $('#charCount').addClass('text-danger');
+                } else {
+                    $('#charCount').removeClass('text-danger');
+                }
+            });
+
+            // Live preview
+            $('input[name="TENXE"]').on('input', function() {
+                $('#previewTitle').text($(this).val() || 'Tên xe');
+            });
+
+            $('#brandSelect, #customBrand').on('change input', function() {
+                var brand = $('#brandSelect').val() || $('#customBrand').val();
+                $('#previewBrand').text(brand || 'Hãng xe');
+            });
+
+            $('input[name="TRANGTHAI"]').on('change', function() {
+                var status = $(this).val();
+                var badge = $('#previewStatus');
+                badge.text(status);
+                badge.removeClass('bg-success bg-danger bg-warning');
+
+                if (status === 'Còn hàng') {
+                    badge.addClass('bg-success');
+                } else if (status === 'Hết hàng') {
+                    badge.addClass('bg-danger');
+                } else {
+                    badge.addClass('bg-warning');
+                }
+            });
+        });
+
+        // Toggle custom brand input
+        function toggleCustomBrand() {
+            $('#customBrandDiv').toggle();
+            if ($('#customBrandDiv').is(':visible')) {
+                $('#customBrand').focus();
+            }
+        }
+
+        // Use custom brand
+        $('#customBrand'). on('input', function() {
+            $('#brandSelect').val('');
+        });
+
+        // Image preview
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function() {
+                var output = document.getElementById('preview');
+                var previewCard = document.getElementById('previewCardImage');
+                output.src = reader.result;
+                previewCard.innerHTML = '<img src="' + reader.result + '" style="width: 100%; height: 100%; object-fit: cover;" />';
+                $('#imagePreview').show();
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function removeImage() {
+            $('#imageFile').val('');
+            $('#imagePreview').hide();
+            $('#previewCardImage').html('<i class="fas fa-image fa-3x text-muted"></i>');
+        }
+    </script>
+}

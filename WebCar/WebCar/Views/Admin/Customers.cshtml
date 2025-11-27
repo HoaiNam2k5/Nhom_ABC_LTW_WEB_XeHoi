@@ -1,0 +1,202 @@
+﻿@model List<WebCar.Models.CUSTOMER>
+
+@{
+    ViewBag.Title = "Quản lý khách hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2 class="fw-bold">
+                <i class="fas fa-users text-success me-2"></i>Quản lý khách hàng
+            </h2>
+            <p class="text-muted">Tổng số: <strong>@Model.Count</strong> khách hàng</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <button class="btn btn-success" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i>Xuất Excel
+            </button>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            @using (Html.BeginForm("Customers", "Admin", FormMethod.Get, new { @class = "row g-3" }))
+            {
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Tìm theo tên, email, SĐT..." value="@ViewBag.SearchTerm" />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-search me-2"></i>Tìm kiếm
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Customers Table -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 80px">Mã KH</th>
+                            <th>Họ tên</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Địa chỉ</th>
+                            <th style="width: 150px">Ngày đăng ký</th>
+                            <th style="width: 120px" class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var customer in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold">#@customer.MAKH</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-primary text-white me-2">
+                                                @customer.HOTEN.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <strong>@customer.HOTEN</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-envelope text-muted me-1"></i>
+                                        @customer.EMAIL
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(customer.SDT))
+                                        {
+                                            <i class="fas fa-phone text-muted me-1"></i>
+                                            @customer.SDT
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(customer.DIACHI))
+                                        {
+                                            <small>@(customer.DIACHI.Length > 50 ? customer.DIACHI.Substring(0, 50) + "..." : customer.DIACHI)</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (customer.NGAYDANGKY.HasValue)
+                                        {
+                                            <small>@customer.NGAYDANGKY.Value.ToString("dd/MM/yyyy")</small>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-outline-info" onclick="viewCustomer(@customer.MAKH)" title="Xem">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-warning" onclick="viewOrders(@customer.MAKH)" title="Đơn hàng">
+                                                <i class="fas fa-shopping-cart"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger" onclick="blockCustomer(@customer.MAKH)" title="Khóa">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <i class="fas fa-users-slash fa-3x text-muted mb-3 d-block"></i>
+                                    <p class="text-muted">Không có khách hàng nào</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        @if (ViewBag.TotalPages > 1)
+        {
+            <div class="card-footer bg-white">
+                <nav>
+                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Customers", new { search = ViewBag.SearchTerm, page = ViewBag.CurrentPage - 1 })">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Customers", new { search = ViewBag.SearchTerm, page = i })">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Customers", new { search = ViewBag.SearchTerm, page = ViewBag.CurrentPage + 1 })">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function viewCustomer(id) {
+            alert('Xem chi tiết khách hàng #' + id);
+        }
+
+        function viewOrders(customerId) {
+            window.location.href = '@Url.Action("Orders", "Admin")?customerId=' + customerId;
+        }
+
+        function blockCustomer(id) {
+            if (confirm('Bạn có chắc muốn khóa tài khoản này?')) {
+                alert('Chức năng khóa tài khoản sẽ được implement!');
+            }
+        }
+
+        function exportToExcel() {
+            alert('Chức năng xuất Excel sẽ được implement!');
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+        .avatar-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+    </style>
+}

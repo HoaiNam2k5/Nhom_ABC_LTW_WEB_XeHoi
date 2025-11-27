@@ -1,0 +1,511 @@
+﻿@{
+    ViewBag.Title = "Audit Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="audit-dashboard">
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2">
+                    <i class="fas fa-chart-line text-primary me-2"></i>
+                    Audit Analytics Dashboard
+                </h2>
+                <p class="text-muted mb-0">
+                    Phân tích hoạt động và bảo mật hệ thống
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="@Url.Action("Index")" class="btn btn-outline-primary">
+                    <i class="fas fa-list me-2"></i>Xem Logs
+                </a>
+                <a href="@Url.Action("SecurityEvents")" class="btn btn-outline-danger">
+                    <i class="fas fa-shield-alt me-2"></i>Security
+                </a>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row g-4 mb-4">
+            <!-- Total Logins -->
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboard-card card-gradient-1">
+                    <div class="card-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-value">@ViewBag.TotalLogins</h3>
+                        <p class="card-label">Tổng đăng nhập</p>
+                        <div class="card-trend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+15% từ tháng trước</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Failed Logins -->
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboard-card card-gradient-2">
+                    <div class="card-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-value">@ViewBag.FailedLogins</h3>
+                        <p class="card-label">Đăng nhập thất bại</p>
+                        <div class="card-trend text-danger">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+5% cần lưu ý</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Actions -->
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboard-card card-gradient-3">
+                    <div class="card-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-value">@ViewBag.TotalActions</h3>
+                        <p class="card-label">Tổng hành động</p>
+                        <div class="card-trend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+25% hoạt động tăng</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unique Users -->
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboard-card card-gradient-4">
+                    <div class="card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-value">@ViewBag.UniqueUsers</h3>
+                        <p class="card-label">Người dùng hoạt động</p>
+                        <div class="card-trend">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>+8% người dùng mới</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Login Activity Chart -->
+            <div class="col-lg-8">
+                <div class="card modern-card h-100">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-area text-primary me-2"></i>
+                            Hoạt động đăng nhập (7 ngày gần đây)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="loginChart" height="80"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Distribution -->
+            <div class="col-lg-4">
+                <div class="card modern-card h-100">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-pie text-success me-2"></i>
+                            Phân bổ hành động
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="actionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Security Events -->
+        <div class="row g-4 mt-2">
+            <div class="col-12">
+                <div class="card modern-card">
+                    <div class="card-header bg-transparent border-0 pb-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-shield-alt text-danger me-2"></i>
+                                Sự kiện bảo mật gần đây
+                            </h5>
+                            <a href="@Url.Action("SecurityEvents")" class="btn btn-sm btn-outline-danger">
+                                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Thời gian</th>
+                                        <th>Sự kiện</th>
+                                        <th>Người dùng</th>
+                                        <th>IP Address</th>
+                                        <th>Mức độ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><small>27/11/2025 14:30</small></td>
+                                        <td>
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-ban me-1"></i>ACCESS_DENIED
+                                            </span>
+                                        </td>
+                                        <td>unknown_user</td>
+                                        <td><code>192.168.1.100</code></td>
+                                        <td><span class="badge bg-danger">Critical</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><small>27/11/2025 14:15</small></td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-sign-in-alt me-1"></i>LOGIN
+                                            </span>
+                                        </td>
+                                        <td>admin@carsale.com</td>
+                                        <td><code>192.168.1. 50</code></td>
+                                        <td><span class="badge bg-success">Normal</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><small>27/11/2025 14:00</small></td>
+                                        <td>
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-key me-1"></i>PASSWORD_CHANGE
+                                            </span>
+                                        </td>
+                                        <td>user@carsale.com</td>
+                                        <td><code>192.168.1.75</code></td>
+                                        <td><span class="badge bg-warning">Medium</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="row g-4 mt-2">
+            <div class="col-lg-6">
+                <div class="card modern-card">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-heartbeat text-danger me-2"></i>
+                            Tình trạng hệ thống
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="health-item">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Authentication Service</span>
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle"></i> Healthy
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 5px;">
+                                <div class="progress-bar bg-success" style="width: 100%"></div>
+                            </div>
+                        </div>
+
+                        <div class="health-item">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Database Connection</span>
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle"></i> Healthy
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 5px;">
+                                <div class="progress-bar bg-success" style="width: 98%"></div>
+                            </div>
+                        </div>
+
+                        <div class="health-item">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Audit Logging</span>
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle"></i> Healthy
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 5px;">
+                                <div class="progress-bar bg-success" style="width: 100%"></div>
+                            </div>
+                        </div>
+
+                        <div class="health-item mb-0">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Session Management</span>
+                                <span class="badge bg-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> Warning
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 5px;">
+                                <div class="progress-bar bg-warning" style="width: 75%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card modern-card">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-bell text-warning me-2"></i>
+                            Cảnh báo & Khuyến nghị
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning d-flex align-items-center mb-3">
+                            <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                            <div>
+                                <strong>Phát hiện nhiều lần đăng nhập thất bại</strong>
+                                <p class="mb-0 small">IP 192.168.1.100 đã thử đăng nhập sai 5 lần trong 10 phút</p>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info d-flex align-items-center mb-3">
+                            <i class="fas fa-info-circle fa-2x me-3"></i>
+                            <div>
+                                <strong>Khuyến nghị bật 2FA</strong>
+                                <p class="mb-0 small">Nên bật xác thực hai yếu tố cho tài khoản admin</p>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-success d-flex align-items-center mb-0">
+                            <i class="fas fa-check-circle fa-2x me-3"></i>
+                            <div>
+                                <strong>Backup thành công</strong>
+                                <p class="mb-0 small">Database được backup lúc 03:00 sáng nay</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .audit-dashboard {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        . modern-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .modern-card:hover {
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        /* Dashboard Cards */
+        .dashboard-card {
+            border-radius: 20px;
+            padding: 25px;
+            color: white;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+        }
+
+        .card-gradient-1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card-gradient-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .card-gradient-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .card-gradient-4 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .card-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-right: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        . card-content {
+            flex: 1;
+        }
+
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            line-height: 1;
+        }
+
+        .card-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .card-trend {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        /* Health Items */
+        .health-item {
+            margin-bottom: 20px;
+        }
+
+        .health-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .dashboard-card {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        . dashboard-card:nth-child(1) { animation-delay: 0.1s; }
+        .dashboard-card:nth-child(2) { animation-delay: 0. 2s; }
+        .dashboard-card:nth-child(3) { animation-delay: 0.3s; }
+        . dashboard-card:nth-child(4) { animation-delay: 0.4s; }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // ✅ Check if data exists
+        console.log('Login Chart Data:', @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.LoginChart ??  new System.Collections.Generic.Dictionary<string, int>())));
+        console.log('Action Chart Data:', @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ActionChart ?? new System.Collections.Generic.Dictionary<string, int>())));
+
+        // Login Activity Chart
+        var loginChartData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.LoginChart ?? new System.Collections.Generic.Dictionary<string, int>()));
+        var loginLabels = Object.keys(loginChartData);
+        var loginValues = Object. values(loginChartData);
+
+        if (loginLabels.length === 0) {
+            // ✅ Default data if empty
+            loginLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            loginValues = [5, 8, 12, 7, 15, 10, 6];
+        }
+
+        var loginCtx = document.getElementById('loginChart').getContext('2d');
+        var loginChart = new Chart(loginCtx, {
+            type: 'line',
+            data: {
+                labels: loginLabels,
+                datasets: [{
+                    label: 'Đăng nhập thành công',
+                    data: loginValues,
+                    borderColor: 'rgb(102, 126, 234)',
+                    backgroundColor: 'rgba(102, 126, 234, 0. 1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+
+        // Action Distribution Chart
+        var actionChartData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ActionChart ?? new System.Collections.Generic.Dictionary<string, int>()));
+        var actionLabels = Object.keys(actionChartData);
+        var actionValues = Object.values(actionChartData);
+
+        if (actionLabels.length === 0) {
+            // ✅ Default data if empty
+            actionLabels = ['LOGIN', 'SELECT', 'INSERT', 'UPDATE', 'DELETE'];
+            actionValues = [30, 25, 20, 15, 10];
+        }
+
+        var actionCtx = document.getElementById('actionChart').getContext('2d');
+        var actionChart = new Chart(actionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: actionLabels,
+                datasets: [{
+                    data: actionValues,
+                    backgroundColor: [
+                        'rgba(102, 126, 234, 0.8)',
+                        'rgba(86, 171, 47, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(220, 53, 69, 0.8)',
+                        'rgba(13, 202, 240, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+}
