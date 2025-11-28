@@ -1,0 +1,477 @@
+﻿@model WebCar.Models.ORDER
+
+@{
+    ViewBag.Title = "Chi tiết đơn hàng #" + Model.MADON;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var orderDetails = ViewBag.OrderDetails as List<WebCar.Models.ORDER_DETAIL>;
+}
+
+<div class="order-details-page">
+    <div class="container py-5">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("MyOrders")">Đơn hàng của tôi</a></li>
+                <li class="breadcrumb-item active">Đơn #@Model.MADON</li>
+            </ol>
+        </nav>
+
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2">
+                    <i class="fas fa-file-invoice text-primary me-2"></i>
+                    Đơn hàng #@Model.MADON
+                </h2>
+                <p class="text-muted mb-0">
+                    Ngày đặt: @Model.FormattedDate
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <span class="@Model.StatusBadgeClass" style="font-size: 1.2rem; padding: 10px 20px;">
+                    <i class="@Model.StatusIcon me-2"></i>
+                    @Model.TRANGTHAI
+                </span>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left: Order Info -->
+            <div class="col-lg-8">
+                <!-- Order Timeline -->
+                <div class="card modern-card mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-route text-primary me-2"></i>
+                            Trạng thái đơn hàng
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="order-timeline">
+                            <div class="timeline-item @(Model.TRANGTHAI == "Chờ xử lý" || Model.TRANGTHAI == "Đang xử lý" || Model.TRANGTHAI == "Đã giao" ? "active" : "")">
+                                <div class="timeline-marker">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Chờ xử lý</h6>
+                                    <p class="text-muted small">Đơn hàng đang chờ được xác nhận</p>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item @(Model.TRANGTHAI == "Đang xử lý" || Model.TRANGTHAI == "Đã giao" ? "active" : "")">
+                                <div class="timeline-marker">
+                                    <i class="fas fa-spinner"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Đang xử lý</h6>
+                                    <p class="text-muted small">Đơn hàng đang được chuẩn bị</p>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item @(Model.TRANGTHAI == "Đã giao" ? "active" : "")">
+                                <div class="timeline-marker">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Đã giao</h6>
+                                    <p class="text-muted small">Xe đã được giao thành công</p>
+                                </div>
+                            </div>
+
+                            @if (Model.TRANGTHAI == "Đã hủy")
+                            {
+                                <div class="timeline-item cancelled active">
+                                    <div class="timeline-marker">
+                                        <i class="fas fa-times-circle"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6>Đã hủy</h6>
+                                        <p class="text-muted small">Đơn hàng đã bị hủy</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="card modern-card mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-car text-success me-2"></i>
+                            Chi tiết xe
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if (orderDetails != null && orderDetails.Any())
+                        {
+                            foreach (var item in orderDetails)
+                            {
+                                <div class="order-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-2">
+                                            <img src="@Url.Content("~/" + item.HINHANH)"
+                                                 alt="@item.TENXE"
+                                                 class="order-item-image"
+                                                 onerror="this.src='@Url.Content("~/images/cars/default.jpg")'" />
+                                        </div>
+                                        <div class="col-md-5">
+                                            <h6 class="order-item-name">@item.TENXE</h6>
+                                            <p class="order-item-brand">@item.HANGXE</p>
+                                        </div>
+                                        <div class="col-md-2 text-center">
+                                            <label class="text-muted small">Số lượng</label>
+                                            <p class="mb-0"><strong>@item.SOLUONG</strong></p>
+                                        </div>
+                                        <div class="col-md-3 text-end">
+                                            <label class="text-muted small">Đơn giá</label>
+                                            <p class="order-item-price">@string.Format("{0:N0}", item.DONGIA) đ</p>
+                                            <label class="text-muted small">Thành tiền</label>
+                                            <h6 class="text-primary">@string.Format("{0:N0}", item.DONGIA * item.SOLUONG) đ</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted">Không có thông tin chi tiết</p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="card modern-card">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-calculator text-warning me-2"></i>
+                            Tổng kết đơn hàng
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="order-summary">
+                            <div class="summary-row">
+                                <span>Tạm tính:</span>
+                                <span>@string.Format("{0:N0}", Model.TONGTIEN) đ</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>VAT (Đã bao gồm):</span>
+                                <span>0 đ</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Phí vận chuyển:</span>
+                                <span class="text-success">Miễn phí</span>
+                            </div>
+                            <hr />
+                            <div class="summary-row total">
+                                <strong>Tổng cộng:</strong>
+                                <h4 class="text-danger mb-0">@string.Format("{0:N0}", Model.TONGTIEN) đ</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Customer Info & Actions -->
+            <div class="col-lg-4">
+                <!-- Customer Info -->
+                <div class="card modern-card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-user me-2"></i>Thông tin khách hàng
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <i class="fas fa-user text-primary"></i>
+                            <div>
+                                <label>Họ tên</label>
+                                <p>@Model.CustomerName</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-envelope text-success"></i>
+                            <div>
+                                <label>Email</label>
+                                <p>@Model.CustomerEmail</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-hashtag text-info"></i>
+                            <div>
+                                <label>Mã KH</label>
+                                <p>#@Model.MAKH</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Info -->
+                <div class="card modern-card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Thông tin đơn hàng
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <i class="fas fa-hashtag text-primary"></i>
+                            <div>
+                                <label>Mã đơn</label>
+                                <p>#@Model.MADON</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-calendar-alt text-success"></i>
+                            <div>
+                                <label>Ngày đặt</label>
+                                <p>@Model.FormattedDate</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-clock text-warning"></i>
+                            <div>
+                                <label>Thời gian</label>
+                                <p>@Model.TimeAgo</p>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-tag text-danger"></i>
+                            <div>
+                                <label>Trạng thái</label>
+                                <p><span class="@Model.StatusBadgeClass">@Model.TRANGTHAI</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card modern-card">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-cogs me-2"></i>Hành động
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <a href="@Url.Action("MyOrders")" class="btn btn-outline-secondary w-100 mb-2">
+                            <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+                        </a>
+
+                        @if (Model.TRANGTHAI == "Chờ xử lý" || Model.TRANGTHAI == "Đang xử lý")
+                        {
+                            <button class="btn btn-danger w-100 mb-2" onclick="confirmCancel(@Model.MADON)">
+                                <i class="fas fa-ban me-2"></i>Hủy đơn hàng
+                            </button>
+                        }
+
+                        <button class="btn btn-outline-primary w-100 mb-2" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>In đơn hàng
+                        </button>
+
+                        <a href="tel:1900232389" class="btn btn-outline-success w-100">
+                            <i class="fas fa-phone me-2"></i>Liên hệ hỗ trợ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận hủy đơn
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn hủy đơn hàng <strong>#@Model.MADON</strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Hành động này không thể hoàn tác!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Không</button>
+                @using (Html.BeginForm("Cancel", "Order", FormMethod.Post, new { id = "cancelForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.MADON" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-ban me-2"></i>Xác nhận hủy
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .order-details-page {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .modern-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        /* Order Timeline */
+        .order-timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .order-timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: 30px;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9ecef;
+            border: 3px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            z-index: 1;
+        }
+
+        .timeline-item.active .timeline-marker {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+        }
+
+        .timeline-item.cancelled .timeline-marker {
+            background: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .timeline-content h6 {
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        /* Order Item */
+        .order-item {
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .order-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .order-item-image {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .order-item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .order-item-brand {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+
+        .order-item-price {
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        /* Order Summary */
+        .order-summary {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+        }
+
+        .summary-row.total {
+            padding-top: 20px;
+        }
+
+        /* Info Item */
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-item i {
+            font-size: 1.5rem;
+            margin-top: 5px;
+        }
+
+        .info-item label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .info-item p {
+            margin: 0;
+            font-weight: 500;
+        }
+
+     
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function confirmCancel(orderId) {
+            var modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+            modal.show();
+        }
+    </script>
+}

@@ -133,6 +133,7 @@
     <Compile Include="Controllers\AuditController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\OrderController.cs" />
     <Compile Include="Controllers\ProductController.cs" />
     <Compile Include="Data\AuditRepository.cs" />
     <Compile Include="Data\CarRepository.cs" />
@@ -2278,6 +2279,32 @@
     <Content Include="images\car\vf8.jpg" />
     <Content Include="images\car\vf9.jpg" />
     <Content Include="images\car\vf9.png" />
+    <Content Include="images\car\vf9trang.jpg" />
+    <Content Include="images\car\vinfast.jpg" />
+    <Content Include="images\car\vinfast_bus.jpg" />
+    <Content Include="images\car\vinfast_klara_s.jpg" />
+    <Content Include="images\car\vinfast_lux_a.jpg" />
+    <Content Include="images\car\vinfast_lux_sa.jpg" />
+    <Content Include="images\car\vinfast_president.jpg" />
+    <Content Include="images\car\vinfast_theon_s.jpg" />
+    <Content Include="images\car\vinfast_vf3.jpg" />
+    <Content Include="images\car\vinfast_vf5.jpg" />
+    <Content Include="images\car\vinfast_vf6.jpg" />
+    <Content Include="images\car\vinfast_vf6_sedan.jpg" />
+    <Content Include="images\car\vinfast_vf7.jpg" />
+    <Content Include="images\car\vinfast_vf7_base.jpg" />
+    <Content Include="images\car\vinfast_vf7_plus.jpg" />
+    <Content Include="images\car\vinfast_vf8.jpg" />
+    <Content Include="images\car\vinfast_vf8_eco.jpg" />
+    <Content Include="images\car\vinfast_vf8_plus.jpg" />
+    <Content Include="images\car\vinfast_vf9.jpg" />
+    <Content Include="images\car\vinfast_vf9_eco.jpg" />
+    <Content Include="images\car\vinfast_vf9_plus.jpg" />
+    <Content Include="images\car\vinfast_vfe34.jpg" />
+    <Content Include="images\car\vinfast_vf_cargo.jpg" />
+    <Content Include="images\car\vinfast_vf_wild.jpg" />
+    <Content Include="images\car\zalo.jpg" />
+    <Content Include="images\car\zaloicon.jpg" />
     <Content Include="images\energy.jpg" />
     <Content Include="images\energy2.jpg" />
     <Content Include="images\energy3.jpg" />
@@ -2425,10 +2452,8 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Home\Energy.cshtml" />
     <Content Include="Views\Home\LuuTruNL.cshtml" />
-    <Content Include="Views\Home\Oto.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\Account\Register.cshtml" />
-    <Content Include="Views\Product\Product.cshtml" />
     <Content Include="Views\Account\ChangePassword.cshtml" />
     <Content Include="Views\Account\MyProfile.cshtml" />
     <Content Include="Views\Admin\Cars.cshtml" />
@@ -2447,6 +2472,9 @@
     <Content Include="Views\Product\Details.cshtml" />
     <Content Include="Views\Product\Create.cshtml" />
     <Content Include="Views\Product\Edit.cshtml" />
+    <Content Include="Views\Order\Create.cshtml" />
+    <Content Include="Views\Order\MyOrders.cshtml" />
+    <Content Include="Views\Order\Details.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

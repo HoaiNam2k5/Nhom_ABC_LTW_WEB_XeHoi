@@ -1,0 +1,327 @@
+﻿@model List<WebCar.Data.OrderViewModel>
+
+@{
+    ViewBag.Title = "Đơn hàng của tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="my-orders-page">
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-2">
+                    <i class="fas fa-shopping-bag text-primary me-2"></i>
+                    Đơn hàng của tôi
+                </h2>
+                <p class="text-muted">
+                    Quản lý và theo dõi tất cả đơn hàng của bạn
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="@Url.Action("Index", "Product")" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-2"></i>Đặt xe mới
+                </a>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row g-3 mb-4">
+            @{
+                var statusStats = new[] {
+                    new { Status = "Chờ xử lý", Icon = "fa-clock", Color = "warning" },
+                    new { Status = "Đang xử lý", Icon = "fa-spinner", Color = "info" },
+                    new { Status = "Đã giao", Icon = "fa-check-circle", Color = "success" },
+                    new { Status = "Đã hủy", Icon = "fa-times-circle", Color = "danger" }
+                };
+            }
+            @foreach (var stat in statusStats)
+            {
+                <div class="col-md-3">
+                    <div class="stat-card stat-@stat.Color">
+                        <i class="fas @stat.Icon"></i>
+                        <div>
+                            <h3>@Model.Count(x => x.TRANGTHAI == stat.Status)</h3>
+                            <p>@stat.Status</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Orders List -->
+        @if (Model != null && Model.Any())
+        {
+            foreach (var order in Model)
+            {
+                <div class="order-card mb-3">
+                    <div class="order-header">
+                        <div class="order-info">
+                            <span class="order-id">Đơn hàng #@order.MADON</span>
+                            <span class="order-date">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                @order.FormattedDate
+                            </span>
+                        </div>
+                        <span class="@order.StatusBadgeClass">
+                            @order.TRANGTHAI
+                        </span>
+                    </div>
+
+                    <div class="order-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-2">
+                                <img src="@Url.Content("~/images/car/" + order.HANGXE.ToLower() + ".jpg")"
+                                     alt="@order.TENXE"
+                                     class="order-image"
+                                     onerror="this.src='@Url.Content("~/images/car/default.jpg")'" />
+                            </div>
+                            <div class="col-md-5">
+                                <h5 class="order-car-name">@order.TENXE</h5>
+                                <p class="order-car-brand">@order.HANGXE</p>
+                                <p class="order-quantity">
+                                    <i class="fas fa-box me-1"></i>
+                                    Số lượng: <strong>@order.SOLUONG</strong>
+                                </p>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <label class="text-muted small">Tổng tiền</label>
+                                <h4 class="order-total">@string.Format("{0:N0}", order.TONGTIEN) đ</h4>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <a href="@Url.Action("Details", "Order", new { id = order.MADON })"
+                                   class="btn btn-primary btn-sm mb-2 w-100">
+                                    <i class="fas fa-eye me-1"></i>Chi tiết
+                                </a>
+                                @if (order.TRANGTHAI == "Chờ xử lý" || order.TRANGTHAI == "Đang xử lý")
+                                {
+                                    <button class="btn btn-outline-danger btn-sm w-100"
+                                            onclick="confirmCancel(@order.MADON)">
+                                        <i class="fas fa-ban me-1"></i>Hủy đơn
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state text-center py-5">
+                <i class="fas fa-shopping-bag fa-5x text-muted mb-4"></i>
+                <h4 class="text-muted mb-3">Bạn chưa có đơn hàng nào</h4>
+                <p class="text-muted mb-4">Hãy khám phá và đặt cọc xe yêu thích của bạn!</p>
+                <a href="@Url.Action("Index", "Product")" class="btn btn-primary btn-lg">
+                    <i class="fas fa-car me-2"></i>Xem xe ngay
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="cancelModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận hủy đơn
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn hủy đơn hàng này?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Hành động này không thể hoàn tác!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Không</button>
+                @using (Html.BeginForm("Cancel", "Order", FormMethod.Post, new { id = "cancelForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="cancelOrderId" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-ban me-2"></i>Hủy đơn
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .my-orders-page {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            }
+
+            .stat-card i {
+                font-size: 2.5rem;
+            }
+
+        .stat-warning i {
+            color: #ffc107;
+        }
+
+        .stat-info i {
+            color: #0dcaf0;
+        }
+
+        .stat-success i {
+            color: #198754;
+        }
+
+        .stat-danger i {
+            color: #dc3545;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .stat-card p {
+            margin: 0;
+            color: #6c757d;
+        }
+
+        /* Order Card */
+        .order-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+            .order-card:hover {
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            }
+
+        .order-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .order-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .order-id {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .order-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .order-body {
+            padding: 20px;
+        }
+
+        .order-image {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .order-car-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .order-car-brand {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .order-quantity {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .order-total {
+            color: #dc3545;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        /* Empty State */
+        .empty-state {
+            background: white;
+            border-radius: 15px;
+            padding: 60px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Status Badges */
+        .badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .badge-warning {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .badge-info {
+            background-color: #0dcaf0;
+            color: #000;
+        }
+
+        .badge-success {
+            background-color: #198754;
+            color: #fff;
+        }
+
+        .badge-danger {
+            background-color: #dc3545;
+            color: #fff;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function confirmCancel(orderId) {
+            document.getElementById('cancelOrderId').value = orderId;
+            var modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+            modal.show();
+        }
+    </script>
+}

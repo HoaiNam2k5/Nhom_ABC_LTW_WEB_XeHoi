@@ -1,11 +1,9 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace WebCar.Models
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
-    using System.Data.Entity.Spatial;
-
+    [Table("ORDER_DETAIL")]
     public partial class ORDER_DETAIL
     {
         [Key]
@@ -20,10 +18,24 @@ namespace WebCar.Models
 
         public int? SOLUONG { get; set; }
 
+        [Column(TypeName = "decimal(12,2)")]
         public decimal? DONGIA { get; set; }
 
+        // ? Navigation properties
+        [ForeignKey("MADON")]
+        public virtual ORDER ORDER { get; set; }
+
+        [ForeignKey("MAXE")]
         public virtual CAR CAR { get; set; }
 
-        public virtual ORDER ORDER { get; set; }
+        // Not mapped - for display
+        [NotMapped]
+        public string TENXE { get; set; }
+
+        [NotMapped]
+        public string HANGXE { get; set; }
+
+        [NotMapped]
+        public string HINHANH { get; set; }
     }
 }

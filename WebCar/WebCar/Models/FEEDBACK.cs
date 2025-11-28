@@ -1,19 +1,19 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace WebCar.Models
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
-    using System.Data.Entity.Spatial;
-
     [Table("FEEDBACK")]
     public partial class FEEDBACK
     {
         [Key]
         public int MAFB { get; set; }
 
+        [Required]
         public int MAKH { get; set; }
 
+        [Required]
         public int MAXE { get; set; }
 
         [StringLength(1000)]
@@ -23,8 +23,11 @@ namespace WebCar.Models
 
         public DateTime? NGAYDANHGIA { get; set; }
 
-        public virtual CAR CAR { get; set; }
-
+        // ? Navigation properties
+        [ForeignKey("MAKH")]
         public virtual CUSTOMER CUSTOMER { get; set; }
+
+        [ForeignKey("MAXE")]
+        public virtual CAR CAR { get; set; }
     }
 }

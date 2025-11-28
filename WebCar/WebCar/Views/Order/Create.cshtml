@@ -1,0 +1,348 @@
+﻿@model WebCar.Models.CAR
+
+@{
+    ViewBag.Title = "Đặt cọc xe";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var car = ViewBag.Car as WebCar.Models.CAR;
+}
+
+<div class="order-create-page">
+    <div class="container py-5">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Product")">Sản phẩm</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Details", "Product", new { id = car.MAXE })">@car.TENXE</a></li>
+                <li class="breadcrumb-item active">Đặt cọc</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <!-- Left: Car Info -->
+            <div class="col-lg-5">
+                <div class="card modern-card sticky-top" style="top: 100px;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-car me-2"></i>Thông tin xe
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Car Image -->
+                        <div class="car-image-preview mb-3">
+                            <img src="@Url.Content("~/" + car.HINHANH)"
+                                 alt="@car.TENXE"
+                                 class="img-fluid rounded"
+                                 onerror="this.src='@Url.Content("~/images/cars/default.jpg")'" />
+                        </div>
+
+                        <!-- Car Details -->
+                        <h4 class="car-title">@car.TENXE</h4>
+                        <p class="car-brand text-muted">@car.HANGXE</p>
+
+                        <div class="car-specs">
+                            <div class="spec-item">
+                                <i class="fas fa-calendar-alt text-primary"></i>
+                                <span>Năm SX: <strong>@car.NAMSX</strong></span>
+                            </div>
+                            <div class="spec-item">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <span>Trạng thái: <strong>@car.TRANGTHAI</strong></span>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <!-- Price -->
+                        <div class="price-box">
+                            <label class="text-muted">Giá xe:</label>
+                            <h3 class="price-value">@string.Format("{0:N0}", car.GIA) đ</h3>
+                            <small class="text-muted">*Giá đã bao gồm VAT</small>
+                        </div>
+
+                        <!-- Deposit Info -->
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Lưu ý:</strong> Đây là đơn đặt cọc. Bạn cần liên hệ showroom để hoàn tất thủ tục.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Order Form -->
+            <div class="col-lg-7">
+                <div class="card modern-card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-file-invoice me-2"></i>Thông tin đặt cọc
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @using (Html.BeginForm("Create", "Order", FormMethod.Post, new { @class = "needs-validation" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="carId" value="@car.MAXE" />
+
+                            <!-- Customer Info (Read-only) -->
+                            <div class="section-title">
+                                <i class="fas fa-user text-primary me-2"></i>
+                                <span>Thông tin khách hàng</span>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Họ tên</label>
+                                    <input type="text" class="form-control" value="@ViewBag.CustomerName" readonly />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Mã khách hàng</label>
+                                    <input type="text" class="form-control" value="#@ViewBag.CustomerId" readonly />
+                                </div>
+                            </div>
+
+                            <!-- Quantity -->
+                            <div class="section-title">
+                                <i class="fas fa-shopping-cart text-success me-2"></i>
+                                <span>Chi tiết đơn hàng</span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold required">
+                                    <i class="fas fa-sort-numeric-up text-primary"></i> Số lượng
+                                </label>
+                                <input type="number"
+                                       name="quantity"
+                                       id="quantityInput"
+                                       class="form-control form-control-lg"
+                                       min="1"
+                                       max="5"
+                                       value="1"
+                                       required
+                                       onchange="updateTotal()" />
+                                <small class="form-text text-muted">Tối đa 5 xe/đơn</small>
+                            </div>
+
+                            <!-- Delivery Address -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold required">
+                                    <i class="fas fa-map-marker-alt text-danger"></i> Địa chỉ giao xe
+                                </label>
+                                <textarea name="diachi"
+                                          class="form-control"
+                                          rows="3"
+                                          placeholder="Nhập địa chỉ chi tiết để giao xe..."
+                                          required></textarea>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold required">
+                                    <i class="fas fa-phone text-success"></i> Số điện thoại
+                                </label>
+                                <input type="tel"
+                                       name="sdt"
+                                       class="form-control"
+                                       placeholder="0900000000"
+                                       pattern="[0-9]{10,11}"
+                                       required />
+                                <small class="form-text text-muted">10-11 số</small>
+                            </div>
+
+                            <!-- Note -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-comment text-info"></i> Ghi chú (tùy chọn)
+                                </label>
+                                <textarea name="ghichu"
+                                          class="form-control"
+                                          rows="3"
+                                          placeholder="Thời gian nhận xe, yêu cầu đặc biệt..."></textarea>
+                            </div>
+
+                            <!-- Total -->
+                            <div class="total-box">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted">Đơn giá:</span>
+                                    <strong id="unitPrice">@string.Format("{0:N0}", car.GIA) đ</strong>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted">Số lượng:</span>
+                                    <strong id="displayQuantity">1</strong>
+                                </div>
+                                <hr />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Tổng tiền:</h5>
+                                    <h3 class="text-danger mb-0" id="totalPrice">@string.Format("{0:N0}", car.GIA) đ</h3>
+                                </div>
+                            </div>
+
+                            <!-- Terms -->
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="agreeTerms" required />
+                                <label class="form-check-label" for="agreeTerms">
+                                    Tôi đồng ý với <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Điều khoản & Điều kiện</a>
+                                </label>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="d-flex gap-2">
+                                <a href="@Url.Action("Details", "Product", new { id = car.MAXE })" class="btn btn-secondary btn-lg">
+                                    <i class="fas fa-times me-2"></i>Hủy
+                                </a>
+                                <button type="submit" class="btn btn-success btn-lg flex-fill">
+                                    <i class="fas fa-check-circle me-2"></i>Xác nhận đặt cọc
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Điều khoản & Điều kiện</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Về đơn đặt cọc</h6>
+                <p>Đơn đặt cọc có giá trị trong vòng 30 ngày kể từ ngày đặt.</p>
+
+                <h6>2. Về thanh toán</h6>
+                <p>Quý khách cần thanh toán đầy đủ trước khi nhận xe.</p>
+
+                <h6>3. Về giao xe</h6>
+                <p>Thời gian giao xe từ 7-15 ngày làm việc tùy tình trạng xe.</p>
+
+                <h6>4. Về hủy đơn</h6>
+                <p>Quý khách có thể hủy đơn trong vòng 24h đầu tiên mà không mất phí.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .order-create-page {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .modern-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .car-image-preview img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .car-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .car-brand {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .car-specs {
+            margin: 20px 0;
+        }
+
+        .spec-item {
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .spec-item i {
+                font-size: 1.2rem;
+            }
+
+        .price-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+
+            .price-box label {
+                color: rgba(255,255,255,0.8);
+                margin-bottom: 10px;
+            }
+
+        .price-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 30px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .required::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        .total-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+            .total-box h3 {
+                font-size: 2rem;
+                font-weight: 700;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        var unitPrice = @car.GIA;
+
+        function updateTotal() {
+            var quantity = parseInt($('#quantityInput').val()) || 1;
+            var total = unitPrice * quantity;
+
+            $('#displayQuantity').text(quantity);
+            $('#totalPrice').text(total.toLocaleString('vi-VN') + ' đ');
+        }
+
+        $(document).ready(function() {
+            // Validate form
+            $('form').on('submit', function(e) {
+                if (!$('#agreeTerms').is(':checked')) {
+                    e.preventDefault();
+                    alert('Vui lòng đồng ý với điều khoản & điều kiện!');
+                    return false;
+                }
+            });
+        });
+    </script>
+}

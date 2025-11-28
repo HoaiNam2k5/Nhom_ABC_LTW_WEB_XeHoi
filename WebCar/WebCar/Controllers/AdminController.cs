@@ -4,6 +4,7 @@ using System.Web.Mvc;
 using WebCar.Data;
 using WebCar.Models;
 using WebCar.Filters;
+using System.Collections.Generic;
 
 namespace WebCar.Controllers
 {
@@ -95,29 +96,64 @@ namespace WebCar.Controllers
             }
         }
 
-        // =========================================
-        // GET: Admin/Orders
-        // =========================================
-        public ActionResult Orders(string status, int page = 1)
+        public ActionResult Orders(string status, string fromDate, string toDate, int page = 1)
         {
             try
             {
+                // Lấy tất cả đơn hàng
                 var orders = _orderRepo.GetAllOrders(status);
 
-                // Pagination
-                int pageSize = 10;
-                var pagedOrders = orders.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+                // ✅ Filter by date range if provided
+                if (!string.IsNullOrEmpty(fromDate) && DateTime.TryParse(fromDate, out DateTime from))
+                {
+                    orders = orders.Where(x => x.NGAYDAT >= from).ToList();
+                }
 
+                if (!string.IsNullOrEmpty(toDate) && DateTime.TryParse(toDate, out DateTime to))
+                {
+                    orders = orders.Where(x => x.NGAYDAT <= to.AddDays(1)).ToList();
+                }
+
+                // ✅ Statistics (calculate once before pagination)
+                ViewBag.TotalOrders = orders.Count;
+                ViewBag.PendingOrders = orders.Count(x => x.TRANGTHAI == "Chờ xử lý");
+                ViewBag.ProcessingOrders = orders.Count(x => x.TRANGTHAI == "Đang xử lý");
+                ViewBag.CompletedOrders = orders.Count(x => x.TRANGTHAI == "Đã giao");
+                ViewBag.CancelledOrders = orders.Count(x => x.TRANGTHAI == "Đã hủy");
+
+                // ✅ Pagination
+                const int pageSize = 10;
                 ViewBag.CurrentPage = page;
                 ViewBag.TotalPages = (int)Math.Ceiling((double)orders.Count / pageSize);
                 ViewBag.StatusFilter = status;
+                ViewBag.FromDate = fromDate;
+                ViewBag.ToDate = toDate;
+
+                var pagedOrders = orders
+                    .OrderByDescending(x => x.NGAYDAT) // ✅ Sort by newest first
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
 
                 return View(pagedOrders);
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
-                return View();
+                System.Diagnostics.Debug.WriteLine($"Error in Admin/Orders: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
+
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi tải danh sách đơn hàng: " + ex.Message;
+
+                // ✅ Return empty list with default ViewBag values
+                ViewBag.TotalOrders = 0;
+                ViewBag.PendingOrders = 0;
+                ViewBag.ProcessingOrders = 0;
+                ViewBag.CompletedOrders = 0;
+                ViewBag.CancelledOrders = 0;
+                ViewBag.CurrentPage = 1;
+                ViewBag.TotalPages = 0;
+
+                return View(new List<OrderViewModel>());
             }
         }
 

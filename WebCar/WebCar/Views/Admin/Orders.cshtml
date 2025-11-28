@@ -1,8 +1,11 @@
-﻿@model List<WebCar.Models.ORDER_VIEW>
+﻿@model List<WebCar.Data.OrderViewModel>
 
 @{
     ViewBag.Title = "Quản lý đơn hàng";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Khai báo statuses ở đây để dùng trong toàn bộ view
+    var statuses = new[] { "Chờ xử lý", "Đang xử lý", "Đã giao", "Đã hủy" };
 }
 
 <div class="container-fluid py-4">
@@ -12,7 +15,7 @@
             <h2 class="fw-bold">
                 <i class="fas fa-shopping-cart text-warning me-2"></i>Quản lý đơn hàng
             </h2>
-            <p class="text-muted">Tổng số: <strong>@Model.Count</strong> đơn hàng</p>
+            <p class="text-muted">Tổng số: <strong>@(ViewBag.TotalOrders ?? Model.Count)</strong> đơn hàng</p>
         </div>
         <div class="col-md-6 text-end">
             <button class="btn btn-warning" onclick="exportOrders()">
@@ -21,21 +24,62 @@
         </div>
     </div>
 
+    <!-- Statistics Cards -->
+    <div class="row g-3 mb-4">
+        @{
+            var stats = new[] {
+                new { Count = ViewBag.PendingOrders ?? 0, Label = "Chờ xử lý", Icon = "fa-clock", Class = "warning" },
+                new { Count = ViewBag.ProcessingOrders ?? 0, Label = "Đang xử lý", Icon = "fa-spinner", Class = "info" },
+                new { Count = ViewBag.CompletedOrders ?? 0, Label = "Đã giao", Icon = "fa-check-circle", Class = "success" },
+                new { Count = ViewBag.CancelledOrders ?? 0, Label = "Đã hủy", Icon = "fa-times-circle", Class = "danger" }
+            };
+        }
+        @foreach (var stat in stats)
+        {
+            <div class="col-md-3">
+                <div class="stat-card stat-@stat.Class">
+                    <div class="stat-icon">
+                        <i class="fas @stat.Icon"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>@stat.Count</h3>
+                        <p>@stat.Label</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
     <!-- Filter -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             @using (Html.BeginForm("Orders", "Admin", FormMethod.Get, new { @class = "row g-3" }))
             {
                 <div class="col-md-4">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-filter text-warning"></i> Trạng thái
+                    </label>
                     <select name="status" class="form-select">
                         <option value="">Tất cả trạng thái</option>
-                        <option value="Chờ xử lý" @(ViewBag.StatusFilter == "Chờ xử lý" ? "selected" : "")>Chờ xử lý</option>
-                        <option value="Đang xử lý" @(ViewBag.StatusFilter == "Đang xử lý" ? "selected" : "")>Đang xử lý</option>
-                        <option value="Đã giao" @(ViewBag.StatusFilter == "Đã giao" ? "selected" : "")>Đã giao</option>
-                        <option value="Đã hủy" @(ViewBag.StatusFilter == "Đã hủy" ? "selected" : "")>Đã hủy</option>
+                        @foreach (var status in statuses)
+                        {
+                            <option value="@status" @(ViewBag.StatusFilter == status ? "selected" : "")>@status</option>
+                        }
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-calendar text-success"></i> Từ ngày
+                    </label>
+                    <input type="date" name="fromDate" class="form-control" value="@ViewBag.FromDate" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-calendar text-danger"></i> Đến ngày
+                    </label>
+                    <input type="date" name="toDate" class="form-control" value="@ViewBag.ToDate" />
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
                     <button type="submit" class="btn btn-warning w-100">
                         <i class="fas fa-filter me-2"></i>Lọc
                     </button>
@@ -53,9 +97,11 @@
                         <tr>
                             <th style="width: 100px">Mã đơn</th>
                             <th>Khách hàng</th>
+                            <th style="width: 200px">Sản phẩm</th>
+                            <th style="width: 80px">SL</th>
                             <th style="width: 150px">Ngày đặt</th>
                             <th style="width: 150px">Tổng tiền</th>
-                            <th style="width: 130px">Trạng thái</th>
+                            <th style="width: 150px">Trạng thái</th>
                             <th style="width: 120px" class="text-center">Thao tác</th>
                         </tr>
                     </thead>
@@ -65,65 +111,57 @@
                             foreach (var order in Model)
                             {
                                 <tr>
-                                    <td class="fw-bold">#@order.MADON</td>
+                                    <td class="fw-bold text-primary">#@order.MADON</td>
                                     <td>
-                                        <strong>@order.CustomerName</strong>
+                                        <div class="d-flex align-items-center">
+                                            <div class="customer-avatar me-2">
+                                                @(order.CustomerName?.Substring(0, 1).ToUpper() ?? "?")
+                                            </div>
+                                            <div>
+                                                <strong>@order.CustomerName</strong>
+                                                <br />
+                                                <small class="text-muted">
+                                                    <i class="fas fa-envelope me-1"></i>@order.CustomerEmail
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong>@order.TENXE</strong>
                                         <br />
-                                        <small class="text-muted">
-                                            <i class="fas fa-envelope me-1"></i>@order.CustomerEmail
-                                        </small>
-                                        @if (!string.IsNullOrEmpty(order.CustomerPhone))
-                                        {
-                                            <br />
-                                            <small class="text-muted">
-                                                <i class="fas fa-phone me-1"></i>@order.CustomerPhone
-                                            </small>
-                                        }
+                                        <small class="text-muted">@order.HANGXE</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">@order.SOLUONG</span>
                                     </td>
                                     <td>
                                         <i class="fas fa-calendar me-1 text-muted"></i>
-                                        @order.NGAYDAT.ToString("dd/MM/yyyy")
-                                        <br />
-                                        <small class="text-muted">@order.NGAYDAT.ToString("HH:mm")</small>
+                                        @order.FormattedDate
                                     </td>
                                     <td class="fw-bold text-danger">
                                         @string.Format("{0:N0}", order.TONGTIEN) đ
                                     </td>
                                     <td>
-                                        @switch (order.TRANGTHAI)
-                                        {
-                                            case "Chờ xử lý":
-                                                <span class="badge bg-warning">
-                                                    <i class="fas fa-clock"></i> @order.TRANGTHAI
-                                                </span>
-                                                break;
-                                            case "Đang xử lý":
-                                                <span class="badge bg-info">
-                                                    <i class="fas fa-spinner"></i> @order.TRANGTHAI
-                                                </span>
-                                                break;
-                                            case "Đã giao":
-                                                <span class="badge bg-success">
-                                                    <i class="fas fa-check-circle"></i> @order. TRANGTHAI
-                                                </span>
-                                                break;
-                                            case "Đã hủy":
-                                                <span class="badge bg-danger">
-                                                    <i class="fas fa-times-circle"></i> @order. TRANGTHAI
-                                                </span>
-                                                break;
-                                            default:
-                                                <span class="badge bg-secondary">@order.TRANGTHAI</span>
-                                                break;
-                                        }
+                                        <select class="form-select form-select-sm status-select @GetStatusClass(order.TRANGTHAI)"
+                                                onchange="updateStatus(@order.MADON, this.value)">
+                                            @foreach (var status in statuses)
+                                            {
+                                                <option value="@status" @(order.TRANGTHAI == status ? "selected" : "")>@status</option>
+                                            }
+                                        </select>
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <button type="button" class="btn btn-outline-info" onclick="viewOrder(@order. MADON)" title="Xem">
+                                            <a href="@Url.Action("Details", "Order", new { id = order.MADON })"
+                                               class="btn btn-outline-info"
+                                               title="Xem chi tiết">
                                                 <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-outline-success" onclick="updateStatus(@order.MADON)" title="Cập nhật">
-                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button"
+                                                    class="btn btn-outline-danger"
+                                                    onclick="deleteOrder(@order.MADON)"
+                                                    title="Xóa">
+                                                <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -133,7 +171,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="6" class="text-center py-5">
+                                <td colspan="8" class="text-center py-5">
                                     <i class="fas fa-shopping-cart fa-3x text-muted mb-3 d-block"></i>
                                     <p class="text-muted">Không có đơn hàng nào</p>
                                 </td>
@@ -145,12 +183,12 @@
         </div>
 
         <!-- Pagination -->
-        @if (ViewBag.TotalPages > 1)
+        @if (ViewBag.TotalPages != null && ViewBag.TotalPages > 1)
         {
             <div class="card-footer bg-white">
                 <nav>
                     <ul class="pagination pagination-sm justify-content-center mb-0">
-                        <li class="page-item @(ViewBag. CurrentPage == 1 ? "disabled" : "")">
+                        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
                             <a class="page-link" href="@Url.Action("Orders", new { status = ViewBag.StatusFilter, page = ViewBag.CurrentPage - 1 })">
                                 <i class="fas fa-chevron-left"></i>
                             </a>
@@ -159,7 +197,7 @@
                         @for (int i = 1; i <= ViewBag.TotalPages; i++)
                         {
                             <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                                <a class="page-link" href="@Url.Action("Orders", new { status = ViewBag. StatusFilter, page = i })">@i</a>
+                                <a class="page-link" href="@Url.Action("Orders", new { status = ViewBag.StatusFilter, page = i })">@i</a>
                             </li>
                         }
 
@@ -175,18 +213,213 @@
     </div>
 </div>
 
+<!-- AntiForgeryToken for AJAX -->
+@Html.AntiForgeryToken()
+
+@functions {
+    string GetStatusClass(string status)
+    {
+        switch (status)
+        {
+            case "Chờ xử lý": return "status-pending";
+            case "Đang xử lý": return "status-processing";
+            case "Đã giao": return "status-completed";
+            case "Đã hủy": return "status-cancelled";
+            default: return "";
+        }
+    }
+}
+
+@section Styles {
+    <style>
+        /* Stat Cards */
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-warning .stat-icon {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-info .stat-icon {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-success .stat-icon {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .stat-danger .stat-icon {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .stat-content h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .stat-content p {
+            margin: 0;
+            color: #6c757d;
+        }
+
+        /* Customer Avatar */
+        .customer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        /* Status Select Styling */
+        .status-select {
+            border-radius: 20px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border: 2px solid;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffc107;
+        }
+
+        .status-processing {
+            background-color: #cff4fc;
+            color: #055160;
+            border-color: #0dcaf0;
+        }
+
+        .status-completed {
+            background-color: #d1e7dd;
+            color: #0a3622;
+            border-color: #198754;
+        }
+
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #58151c;
+            border-color: #dc3545;
+        }
+
+        /* Table Hover */
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+            .table tbody tr:hover {
+                background: #f8f9fa;
+                transform: scale(1.01);
+            }
+
+        /* Buttons */
+        .btn-group-sm > .btn {
+            padding: 0.375rem 0.75rem;
+        }
+    </style>
+}
+
 @section Scripts {
     <script>
-        function viewOrder(id) {
-            alert('Xem chi tiết đơn hàng #' + id);
+        // Update Order Status (AJAX)
+        function updateStatus(orderId, newStatus) {
+            if (!confirm('Bạn có chắc muốn thay đổi trạng thái đơn hàng này?')) {
+                location.reload();
+                return;
+            }
+
+            fetch('@Url.Action("UpdateStatus", "Order")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    '__RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value,
+                    'orderId': orderId,
+                    'status': newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || 'Cập nhật trạng thái thành công!');
+                    location.reload();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra!');
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi cập nhật trạng thái!');
+                location.reload();
+            });
         }
 
-        function updateStatus(id) {
-            alert('Cập nhật trạng thái đơn hàng #' + id);
+        // Delete Order
+        function deleteOrder(orderId) {
+            if (!confirm('Bạn có chắc muốn xóa đơn hàng này?\nHành động này không thể hoàn tác!')) {
+                return;
+            }
+
+            fetch('@Url.Action("DeleteOrder", "Admin")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    '__RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value,
+                    'orderId': orderId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || 'Xóa đơn hàng thành công!');
+                    location.reload();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi xóa đơn hàng!');
+            });
         }
 
+        // Export Orders
         function exportOrders() {
-            alert('Xuất báo cáo đơn hàng');
+            window.location.href = '@Url.Action("ExportOrders", "Admin")';
         }
     </script>
 }

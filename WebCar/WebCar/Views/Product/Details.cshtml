@@ -11,7 +11,7 @@
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
-                <li class="breadcrumb-item"><a href="@Url. Action(" Index")">Sản phẩm</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Index")">Sản phẩm</a></li>
                 <li class="breadcrumb-item active">@Model.TENXE</li>
             </ol>
         </nav>
@@ -25,7 +25,7 @@
                         <img src="@Url.Content("~/" + Model.HINHANH)"
                              alt="@Model.TENXE"
                              id="mainImage"
-                             onerror="this.src='@Url.Content("~/images/cars/default. jpg")'" />
+                             onerror="this.src='@Url.Content("~/images/cars/default.jpg")'" />
 
                         <!-- Status Badge -->
                         @if (Model.TRANGTHAI == "Còn hàng")
@@ -42,29 +42,18 @@
                         }
                     </div>
 
-                    <!-- Thumbnail Images (Placeholder) -->
+                    <!-- Thumbnail Images -->
                     <div class="thumbnail-gallery mt-3">
                         <div class="row g-2">
-                            <div class="col-3">
-                                <img src="@Url.Content("~/" + Model.HINHANH)"
-                                     class="thumbnail active"
-                                     onclick="changeImage(this. src)" />
-                            </div>
-                            <div class="col-3">
-                                <img src="@Url.Content("~/" + Model.HINHANH)"
-                                     class="thumbnail"
-                                     onclick="changeImage(this.src)" />
-                            </div>
-                            <div class="col-3">
-                                <img src="@Url.Content("~/" + Model.HINHANH)"
-                                     class="thumbnail"
-                                     onclick="changeImage(this.src)" />
-                            </div>
-                            <div class="col-3">
-                                <img src="@Url.Content("~/" + Model.HINHANH)"
-                                     class="thumbnail"
-                                     onclick="changeImage(this.src)" />
-                            </div>
+                            @for (int i = 0; i < 4; i++)
+                            {
+                                <div class="col-3">
+                                    <img src="@Url.Content("~/" + Model.HINHANH)"
+                                         class="thumbnail @(i == 0 ? "active" : "")"
+                                         onclick="changeImage(this.src)"
+                                         alt="@Model.TENXE thumbnail @(i + 1)" />
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
@@ -131,32 +120,43 @@
                     <div class="product-actions">
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <button class="btn btn-primary btn-lg w-100 mb-2" onclick="bookCar()">
-                                <i class="fas fa-hand-holding-usd me-2"></i>Đặt cọc ngay
-                            </button>
+                            if (Model.TRANGTHAI == "Còn hàng")
+                            {
+                                <a href="@Url.Action("Create", "Order", new { carId = Model.MAXE })"
+                                   class="btn btn-success btn-lg w-100 mb-2">
+                                    <i class="fas fa-hand-holding-usd me-2"></i>Đặt cọc ngay
+                                </a>
+                            }
+                            else
+                            {
+                                <button class="btn btn-secondary btn-lg w-100 mb-2" disabled>
+                                    <i class="fas fa-times-circle me-2"></i>Xe không còn hàng
+                                </button>
+                            }
+
                             <button class="btn btn-outline-secondary btn-lg w-100 mb-2" onclick="contactSales()">
                                 <i class="fas fa-phone me-2"></i>Liên hệ tư vấn
                             </button>
+
+                            if (Session["RoleName"] != null &&
+                                (Session["RoleName"].ToString() == "ADMIN" || Session["RoleName"].ToString() == "MANAGER"))
+                            {
+                                <div class="admin-actions mt-3">
+                                    <a href="@Url.Action("Edit", new { id = Model.MAXE })" class="btn btn-warning">
+                                        <i class="fas fa-edit me-2"></i>Sửa
+                                    </a>
+                                    <button class="btn btn-danger" onclick="confirmDelete(@Model.MAXE)">
+                                        <i class="fas fa-trash-alt me-2"></i>Xóa
+                                    </button>
+                                </div>
+                            }
                         }
                         else
                         {
-                            <a href="@Url.Action("Login", "Account", new { returnUrl = Request. Url.PathAndQuery })"
+                            <a href="@Url.Action("Login", "Account", new { returnUrl = Request.Url.PathAndQuery })"
                                class="btn btn-primary btn-lg w-100 mb-2">
                                 <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập để đặt cọc
                             </a>
-                        }
-
-                        @if (User.Identity.IsAuthenticated &&
-                            (Session["RoleName"]?.ToString() == "ADMIN" || Session["RoleName"]?.ToString() == "MANAGER"))
-                        {
-                            <div class="admin-actions mt-3">
-                                <a href="@Url.Action("Edit", new { id = Model. MAXE })" class="btn btn-warning">
-                                    <i class="fas fa-edit me-2"></i>Sửa
-                                </a>
-                                <button class="btn btn-danger" onclick="confirmDelete(@Model.MAXE)">
-                                    <i class="fas fa-trash-alt me-2"></i>Xóa
-                                </button>
-                            </div>
                         }
                     </div>
 
@@ -181,17 +181,20 @@
         <div class="product-tabs mt-5">
             <ul class="nav nav-tabs" id="productTab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button">
+                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab"
+                            data-bs-target="#description" type="button" role="tab">
                         <i class="fas fa-info-circle me-2"></i>Mô tả
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs" type="button">
+                    <button class="nav-link" id="specs-tab" data-bs-toggle="tab"
+                            data-bs-target="#specs" type="button" role="tab">
                         <i class="fas fa-cogs me-2"></i>Thông số kỹ thuật
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab"
+                            data-bs-target="#reviews" type="button" role="tab">
                         <i class="fas fa-comments me-2"></i>Đánh giá (123)
                     </button>
                 </li>
@@ -199,7 +202,7 @@
 
             <div class="tab-content" id="productTabContent">
                 <!-- Description -->
-                <div class="tab-pane fade show active" id="description">
+                <div class="tab-pane fade show active" id="description" role="tabpanel">
                     <div class="tab-content-wrapper">
                         <h4 class="mb-3">Mô tả sản phẩm</h4>
                         @if (!string.IsNullOrEmpty(Model.MOTA))
@@ -208,13 +211,13 @@
                         }
                         else
                         {
-                            <p>Chưa có mô tả chi tiết. </p>
+                            <p>Chưa có mô tả chi tiết.</p>
                         }
 
                         <div class="description-extra mt-4">
                             <h5>Giới thiệu về @Model.TENXE</h5>
                             <p>
-                                @Model.TENXE là dòng xe điện cao cấp của VinFast,
+                                @Model.TENXE là dòng xe cao cấp của @Model.HANGXE,
                                 được thiết kế hiện đại, công nghệ tiên tiến,
                                 mang đến trải nghiệm lái xe tuyệt vời cho người dùng Việt Nam.
                             </p>
@@ -223,7 +226,7 @@
                 </div>
 
                 <!-- Specifications -->
-                <div class="tab-pane fade" id="specs">
+                <div class="tab-pane fade" id="specs" role="tabpanel">
                     <div class="tab-content-wrapper">
                         <h4 class="mb-3">Thông số kỹ thuật</h4>
                         <table class="table table-bordered specs-table">
@@ -242,7 +245,9 @@
                                 </tr>
                                 <tr>
                                     <td class="spec-label">Giá bán</td>
-                                    <td class="spec-value">@string.Format("{0:N0}", Model.GIA) đ</td>
+                                    <td class="spec-value">
+                                        @(Model.GIA.HasValue ? string.Format("{0:N0} đ", Model.GIA) : "Liên hệ")
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td class="spec-label">Trạng thái</td>
@@ -254,7 +259,7 @@
                 </div>
 
                 <!-- Reviews -->
-                <div class="tab-pane fade" id="reviews">
+                <div class="tab-pane fade" id="reviews" role="tabpanel">
                     <div class="tab-content-wrapper">
                         <h4 class="mb-3">Đánh giá từ khách hàng</h4>
 
@@ -273,87 +278,69 @@
                                     <p class="text-muted">123 đánh giá</p>
                                 </div>
                                 <div class="col-md-8">
-                                    <!-- Rating bars -->
-                                    <div class="rating-bar">
-                                        <span>5 <i class="fas fa-star"></i></span>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-success" style="width: 70%"></div>
+                                    @{
+                                        var ratings = new[] {
+                                            new { Stars = 5, Width = 70, Count = 86 },
+                                            new { Stars = 4, Width = 20, Count = 25 },
+                                            new { Stars = 3, Width = 7, Count = 9 },
+                                            new { Stars = 2, Width = 2, Count = 2 },
+                                            new { Stars = 1, Width = 1, Count = 1 }
+                                        };
+                                        var barColors = new[] { "success", "info", "warning", "orange", "danger" };
+                                    }
+                                    @for (int i = 0; i < ratings.Length; i++)
+                                    {
+                                        <div class="rating-bar">
+                                            <span>@ratings[i].Stars <i class="fas fa-star"></i></span>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-@barColors[i]"
+                                                     style="width: @(ratings[i].Width)%"></div>
+                                            </div>
+                                            <span>@ratings[i].Count</span>
                                         </div>
-                                        <span>86</span>
-                                    </div>
-                                    <div class="rating-bar">
-                                        <span>4 <i class="fas fa-star"></i></span>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-info" style="width: 20%"></div>
-                                        </div>
-                                        <span>25</span>
-                                    </div>
-                                    <div class="rating-bar">
-                                        <span>3 <i class="fas fa-star"></i></span>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-warning" style="width: 7%"></div>
-                                        </div>
-                                        <span>9</span>
-                                    </div>
-                                    <div class="rating-bar">
-                                        <span>2 <i class="fas fa-star"></i></span>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-orange" style="width: 2%"></div>
-                                        </div>
-                                        <span>2</span>
-                                    </div>
-                                    <div class="rating-bar">
-                                        <span>1 <i class="fas fa-star"></i></span>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-danger" style="width: 1%"></div>
-                                        </div>
-                                        <span>1</span>
-                                    </div>
+                                    }
                                 </div>
                             </div>
                         </div>
 
                         <!-- Review List -->
                         <div class="reviews-list">
-                            <div class="review-item">
-                                <div class="reviewer-info">
-                                    <div class="reviewer-avatar">N</div>
-                                    <div class="reviewer-details">
-                                        <h6 class="reviewer-name">Nguyễn Văn A</h6>
-                                        <div class="review-stars">
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
+                            @{
+                                var reviews = new[] {
+                                    new { Initial = "N", Name = "Nguyễn Văn A", Stars = 5, Date = "15/11/2025",
+                                          Comment = "Xe rất đẹp, vận hành êm ái. Tôi rất hài lòng với sự lựa chọn này!" },
+                                    new { Initial = "T", Name = "Trần Thị B", Stars = 4, Date = "10/11/2025",
+                                          Comment = "Thiết kế hiện đại, công nghệ tốt. Hơi đắt nhưng đáng tiền!" }
+                                };
+                            }
+                            @foreach (var review in reviews)
+                            {
+                                <div class="review-item">
+                                    <div class="reviewer-info">
+                                        <div class="reviewer-avatar">@review.Initial</div>
+                                        <div class="reviewer-details">
+                                            <h6 class="reviewer-name">@review.Name</h6>
+                                            <div class="review-stars">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    if (i <= review.Stars)
+                                                    {
+                                                        <i class="fas fa-star"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="far fa-star"></i>
+                                                    }
+                                                }
+                                            </div>
+                                            <small class="review-date">@review.Date</small>
                                         </div>
-                                        <small class="review-date">15/11/2025</small>
+                                    </div>
+                                    <div class="review-content">
+                                        <p>@review.Comment</p>
                                     </div>
                                 </div>
-                                <div class="review-content">
-                                    <p>Xe rất đẹp, vận hành êm ái. Tôi rất hài lòng với sự lựa chọn này! </p>
-                                </div>
-                            </div>
-
-                            <div class="review-item">
-                                <div class="reviewer-info">
-                                    <div class="reviewer-avatar">T</div>
-                                    <div class="reviewer-details">
-                                        <h6 class="reviewer-name">Trần Thị B</h6>
-                                        <div class="review-stars">
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="far fa-star"></i>
-                                        </div>
-                                        <small class="review-date">10/11/2025</small>
-                                    </div>
-                                </div>
-                                <div class="review-content">
-                                    <p>Thiết kế hiện đại, công nghệ tốt. Hơi đắt nhưng đáng tiền! </p>
-                                </div>
-                            </div>
+                            }
                         </div>
                     </div>
                 </div>
@@ -361,47 +348,56 @@
         </div>
 
         <!-- Related Products -->
-        @if (ViewBag.RelatedCars != null && ((List<WebCar.Models.CAR>)ViewBag.RelatedCars).Any())
+        @if (ViewBag.RelatedCars != null)
         {
-            <div class="related-products mt-5">
-                <h3 class="section-title mb-4">
-                    <i class="fas fa-car me-2"></i>Xe tương tự
-                </h3>
-                <div class="row g-4">
-                    @foreach (var car in (List<WebCar.Models.CAR>)ViewBag.RelatedCars)
-                    {
-                        <div class="col-lg-3 col-md-4 col-sm-6">
-                            <div class="product-card-mini">
-                                <div class="product-image-mini">
-                                    <img src="@Url.Content("~/" + car.HINHANH)" alt="@car.TENXE" />
-                                </div>
-                                <div class="product-content-mini">
-                                    <h6 class="product-title-mini">
-                                        <a href="@Url.Action("Details", new { id = car.MAXE })">@car.TENXE</a>
-                                    </h6>
-                                    <p class="product-price-mini">@string.Format("{0:N0}", car.GIA) đ</p>
-                                    <a href="@Url.Action("Details", new { id = car. MAXE })" class="btn btn-sm btn-outline-primary w-100">
-                                        Xem chi tiết
-                                    </a>
+            var relatedCars = (List<WebCar.Models.CAR>)ViewBag.RelatedCars;
+            if (relatedCars.Any())
+            {
+                <div class="related-products mt-5">
+                    <h3 class="section-title mb-4">
+                        <i class="fas fa-car me-2"></i>Xe tương tự
+                    </h3>
+                    <div class="row g-4">
+                        @foreach (var car in relatedCars)
+                        {
+                            <div class="col-lg-3 col-md-4 col-sm-6">
+                                <div class="product-card-mini">
+                                    <div class="product-image-mini">
+                                        <img src="@Url.Content("~/" + car.HINHANH)"
+                                             alt="@car.TENXE"
+                                             onerror="this.src='@Url.Content("~/images/cars/default.jpg")'" />
+                                    </div>
+                                    <div class="product-content-mini">
+                                        <h6 class="product-title-mini">
+                                            <a href="@Url.Action("Details", new { id = car.MAXE })">@car.TENXE</a>
+                                        </h6>
+                                        <p class="product-price-mini">
+                                            @(car.GIA.HasValue ? string.Format("{0:N0} đ", car.GIA) : "Liên hệ")
+                                        </p>
+                                        <a href="@Url.Action("Details", new { id = car.MAXE })"
+                                           class="btn btn-sm btn-outline-primary w-100">
+                                            Xem chi tiết
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
                 </div>
-            </div>
+            }
         }
     </div>
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">
+                <h5 class="modal-title" id="deleteModalLabel">
                     <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận xóa
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p>Bạn có chắc chắn muốn xóa xe <strong>@Model.TENXE</strong>?</p>
@@ -431,8 +427,7 @@
             min-height: 100vh;
         }
 
-        /* Gallery */
-        .product-gallery . main-image {
+        .product-gallery .main-image {
             position: relative;
             border-radius: 15px;
             overflow: hidden;
@@ -456,6 +451,16 @@
             font-weight: 600;
         }
 
+        .badge-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-danger {
+            background: #dc3545;
+            color: white;
+        }
+
         .thumbnail {
             width: 100%;
             height: 80px;
@@ -466,11 +471,11 @@
             transition: all 0.3s ease;
         }
 
-            .thumbnail:hover, .thumbnail.active {
+            .thumbnail:hover,
+            .thumbnail.active {
                 border-color: #0d6efd;
             }
 
-        /* Product Info */
         .product-info-section {
             background: white;
             border-radius: 15px;
@@ -492,12 +497,12 @@
             margin: 10px 0 20px;
         }
 
-        .product-rating . stars {
+        .product-rating .stars {
             color: #ffc107;
             font-size: 1.2rem;
         }
 
-        . rating-text {
+        .rating-text {
             color: #6c757d;
             margin-left: 10px;
         }
@@ -521,7 +526,6 @@
             font-size: 0.85rem;
         }
 
-        /* Specifications */
         .product-specs {
             margin: 30px 0;
             padding: 20px;
@@ -529,7 +533,7 @@
             border-radius: 12px;
         }
 
-        . spec-item {
+        .spec-item {
             display: flex;
             align-items: center;
             gap: 15px;
@@ -554,7 +558,6 @@
             font-weight: 600;
         }
 
-        /* Features */
         .product-features {
             margin-top: 30px;
             padding: 20px;
@@ -576,7 +579,6 @@
                 padding: 8px 0;
             }
 
-        /* Tabs */
         .product-tabs {
             background: white;
             border-radius: 15px;
@@ -595,7 +597,7 @@
                 padding: 15px 25px;
             }
 
-                .nav-tabs . nav-link.active {
+                .nav-tabs .nav-link.active {
                     color: #0d6efd;
                     border-bottom: 3px solid #0d6efd;
                 }
@@ -604,17 +606,16 @@
             padding: 30px 0;
         }
 
-        . specs-table td {
+        .specs-table td {
             padding: 15px;
         }
 
-        . specs-table . spec-label {
+        .specs-table .spec-label {
             font-weight: 600;
             width: 30%;
             background: #f8f9fa;
         }
 
-        /* Reviews */
         .review-summary {
             background: #f8f9fa;
             padding: 30px;
@@ -634,7 +635,7 @@
             margin-bottom: 10px;
         }
 
-            . rating-bar . progress {
+            .rating-bar .progress {
                 flex: 1;
                 height: 8px;
             }
@@ -646,7 +647,7 @@
             margin-bottom: 15px;
         }
 
-        . reviewer-info {
+        .reviewer-info {
             display: flex;
             align-items: center;
             gap: 15px;
@@ -666,11 +667,10 @@
             font-size: 1.2rem;
         }
 
-        . review-stars {
+        .review-stars {
             color: #ffc107;
         }
 
-        /* Related Products */
         .product-card-mini {
             background: white;
             border-radius: 12px;
@@ -699,17 +699,30 @@
             padding: 15px;
         }
 
-        . product-title-mini a {
+        .product-title-mini a {
             color: #212529;
             text-decoration: none;
             font-size: 0.95rem;
         }
 
-        . product-price-mini {
+        .product-price-mini {
             color: #dc3545;
             font-weight: 700;
             font-size: 1.1rem;
             margin: 10px 0;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+            .admin-actions .btn {
+                flex: 1;
+            }
+
+        .bg-orange {
+            background-color: #fd7e14 !important;
         }
     </style>
 }
@@ -718,12 +731,10 @@
     <script>
         function changeImage(src) {
             document.getElementById('mainImage').src = src;
-            $('. thumbnail').removeClass('active');
+            document.querySelectorAll('.thumbnail').forEach(thumb => {
+                thumb.classList.remove('active');
+            });
             event.target.classList.add('active');
-        }
-
-        function bookCar() {
-            alert('Chức năng đặt cọc sẽ được implement! ');
         }
 
         function contactSales() {
