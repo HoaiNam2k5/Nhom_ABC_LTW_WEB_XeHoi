@@ -316,7 +316,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 ## 📞 Liên hệ
 
 ### 📧 Email
-- **Email dự án:** [email@example.com]
+- **Email dự án:** [Namtqn2@gmail.com]
 
 ### 🔗 Repository
 - **GitHub:** [https://github.com/HoaiNam2k5/Nhom_ABC_LTW_WEB_XeHoi](https://github.com/HoaiNam2k5/Nhom_ABC_LTW_WEB_XeHoi)
