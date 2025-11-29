@@ -282,8 +282,8 @@ Nhom_ABC_LTW_WEB_XeHoi/
 | 3 | Thành viên 3 | Developer | Database, Testing |
 
 > 📚 **Môn học:** Lập Trình Web  
-> 🏫 **Trường:** [Tên trường đại học]  
-> 📅 **Năm học:** 2024-2025
+> 🏫 **Trường:** [Đại Học Công Thương TP.HCM]  
+> 📅 **Năm học:** 2023-2026
 
 ---
 
