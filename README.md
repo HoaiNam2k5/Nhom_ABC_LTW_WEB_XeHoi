@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/SQL%20Server-2019+-red?style=for-the-badge&logo=microsoftsqlserver" alt="SQL Server">
 </p>
 
-> 🎓 **Đồ án môn Lập Trình Web** - Website quản lý, giới thiệu và mua bán xe hơi trực tuyến
+> 🎓 **** - Website quản lý, giới thiệu và mua bán xe hơi trực tuyến
 
 ---
 
