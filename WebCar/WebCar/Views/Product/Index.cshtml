@@ -5,182 +5,285 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="product-page">
-    <div class="container py-5">
-        <!-- Header -->
-        <div class="row mb-4">
-            <div class="col-md-8">
-                <h2 class="fw-bold mb-2">
-                    <i class="fas fa-car text-primary me-2"></i>
-                    Danh sách xe VinFast
-                </h2>
-                <p class="text-muted">
-                    Tìm thấy <strong>@(ViewBag.TotalCars ?? Model.Count)</strong> xe phù hợp
-                </p>
-            </div>
-            <div class="col-md-4 text-end">
-                @if (User.Identity.IsAuthenticated &&
-                    (Session["RoleName"]?.ToString() == "ADMIN" || Session["RoleName"]?.ToString() == "MANAGER"))
-                {
-                    <a href="@Url.Action("Create")" class="btn btn-success btn-lg">
-                        <i class="fas fa-plus-circle me-2"></i>Thêm xe mới
-                    </a>
-                }
+<!-- Hero Banner with Background Image -->
+<div class="hero-banner" style="margin-top: 0; padding-top: 100px;">
+    <div class="hero-bg-image"></div>
+    <div class="hero-overlay"></div>
+    <div class="container hero-container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 col-md-12">
+                <div class="hero-content">
+                    <span class="hero-badge animate-fade-in">
+                        <i class="fas fa-star"></i> VinFast Premium Collection
+                    </span>
+                    <h1 class="hero-title animate-slide-up">
+                        Khám Phá Thế Giới <br />
+                        <span class="gradient-text">Xe Điện VinFast</span>
+                    </h1>
+                    <p class="hero-description animate-slide-up-delay">
+                        Công nghệ tiên tiến - Thiết kế đẳng cấp - Trải nghiệm vượt trội
+                    </p>
+                    <div class="hero-stats animate-fade-in-delay">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-car"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>@(ViewBag.TotalCars ?? Model.Count())+</h3>
+                                <p>Xe có sẵn</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>100%</h3>
+                                <p>Chính hãng</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>5.0</h3>
+                                <p>Đánh giá</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Search & Filter -->
-        <div class="card modern-card mb-4">
-            <div class="card-body">
-                @using (Html.BeginForm("Index", "Product", FormMethod.Get, new { @class = "row g-3" }))
-                {
+    <!-- Scroll Down Indicator -->
+    <div class="scroll-indicator">
+        <i class="fas fa-chevron-down"></i>
+    </div>
+</div>
+
+<!-- Advanced Filter Section -->
+<div class="filter-section">
+    <div class="container">
+        <div class="filter-card glass-effect">
+            <div class="filter-header">
+                <h3><i class="fas fa-sliders-h"></i> Tìm kiếm xe của bạn</h3>
+                <p>Sử dụng bộ lọc thông minh để tìm xe phù hợp</p>
+            </div>
+
+            @using (Html.BeginForm("Index", "Product", FormMethod.Get, new { @class = "filter-form" }))
+            {
+                <div class="row g-3">
                     <!-- Search -->
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">
-                            <i class="fas fa-search text-primary"></i> Tìm kiếm
-                        </label>
-                        <input type="text" name="search" class="form-control" placeholder="Tên xe..." value="@ViewBag.SearchTerm" />
+                    <div class="col-lg-3 col-md-6 col-12">
+                        <div class="form-group-modern">
+                            <label class="form-label-modern">
+                                <i class="fas fa-search"></i> Tìm kiếm
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" name="search" class="form-control-modern"
+                                       placeholder="Nhập tên xe, model..." value="@ViewBag.SearchTerm" />
+                                <span class="input-icon"><i class="fas fa-search"></i></span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Brand -->
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold">
-                            <i class="fas fa-tag text-success"></i> Hãng xe
-                        </label>
-                        <select name="brand" class="form-select">
-                            <option value="">Tất cả</option>
-                            @if (ViewBag.Brands != null)
-                            {
-                                foreach (var brand in ViewBag.Brands)
-                                {
-                                    <option value="@brand" @(brand == ViewBag.BrandFilter ? "selected" : "")>@brand</option>
-                                }
-                            }
-                        </select>
+                    <div class="col-lg-2 col-md-6 col-12">
+                        <div class="form-group-modern">
+                            <label class="form-label-modern">
+                                <i class="fas fa-tag"></i> Hãng xe
+                            </label>
+                            <div class="select-wrapper">
+                                <select name="brand" class="form-select-modern">
+                                    <option value="">Tất cả hãng</option>
+                                    @if (ViewBag.Brands != null)
+                                    {
+                                        foreach (var brand in ViewBag.Brands)
+                                        {
+                                            <option value="@brand" @(brand == ViewBag.BrandFilter ? "selected" : "")>@brand</option>
+                                        }
+                                    }
+                                </select>
+                                <span class="select-icon"><i class="fas fa-chevron-down"></i></span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Price Range -->
-                    <div class="col-md-2">
-                        <label class="form-label fw-bold">
-                            <i class="fas fa-dollar-sign text-warning"></i> Giá từ (triệu)
-                        </label>
-                        <input type="number" name="minPrice" class="form-control" placeholder="0" value="@ViewBag.MinPrice" />
+                    <!-- Min Price -->
+                    <div class="col-lg-2 col-md-6 col-12">
+                        <div class="form-group-modern">
+                            <label class="form-label-modern">
+                                <i class="fas fa-dollar-sign"></i> Giá từ
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" name="minPrice" class="form-control-modern"
+                                       placeholder="Từ (triệu)" value="@ViewBag.MinPrice" />
+                                <span class="input-icon"><i class="fas fa-money-bill-wave"></i></span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="col-md-2">
-                        <label class="form-label fw-bold">
-                            <i class="fas fa-dollar-sign text-warning"></i> Đến (triệu)
-                        </label>
-                        <input type="number" name="maxPrice" class="form-control" placeholder="9999" value="@ViewBag.MaxPrice" />
+                    <!-- Max Price -->
+                    <div class="col-lg-2 col-md-6 col-12">
+                        <div class="form-group-modern">
+                            <label class="form-label-modern">
+                                <i class="fas fa-dollar-sign"></i> Giá đến
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" name="maxPrice" class="form-control-modern"
+                                       placeholder="Đến (triệu)" value="@ViewBag.MaxPrice" />
+                                <span class="input-icon"><i class="fas fa-money-bill-wave"></i></span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Submit -->
-                    <div class="col-md-1 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-filter"></i>
-                        </button>
+                    <!-- Buttons -->
+                    <div class="col-lg-3 col-md-12 col-12">
+                        <div class="form-group-modern">
+                            <label class="form-label-modern d-none d-lg-block">&nbsp;</label>
+                            <div class="filter-actions">
+                                <button type="submit" class="btn-filter-primary">
+                                    <i class="fas fa-search"></i>
+                                    <span>Tìm kiếm</span>
+                                </button>
+                                <a href="@Url.Action("Index")" class="btn-filter-reset" title="Reset">
+                                    <i class="fas fa-redo-alt"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Products Section -->
+<div class="products-section">
+    <div class="container">
+        <!-- Section Header -->
+        <div class="section-header">
+            <div class="row align-items-center mb-4">
+                <div class="col-md-8">
+                    <h2 class="section-title">
+                        <span class="title-highlight">Bộ Sưu Tập</span> VinFast
+                    </h2>
+                    <p class="section-subtitle">
+                        Hiển thị <strong>@Model.Count()</strong> trong tổng số <strong>@(ViewBag.TotalCars ?? Model.Count())</strong> xe
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    @if (User.Identity.IsAuthenticated && (Session["RoleName"]?.ToString() == "ADMIN" || Session["RoleName"]?.ToString() == "MANAGER"))
+                    {
+                        <a href="@Url.Action("Create")" class="btn-add-new">
+                            <i class="fas fa-plus-circle"></i> Thêm xe mới
+                        </a>
+                    }
+                </div>
             </div>
         </div>
 
         <!-- Products Grid -->
         @if (Model != null && Model.Any())
         {
-            <div class="row g-4 mb-4">
+            <div class="row g-4 mb-5" id="carsGrid">
                 @foreach (var car in Model)
                 {
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <div class="product-card">
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12">
+                        <div class="car-card scroll-reveal">
                             <!-- Image -->
-                            <div class="product-image">
-                                <img src="@Url.Content("~/" + car.HINHANH)"
-                                     alt="@car.TENXE"
+                            <div class="car-image-wrapper">
+                                <img src="@Url.Content("~/" + car.HINHANH)" alt="@car.TENXE" class="car-image"
                                      onerror="this.src='@Url.Content("~/images/cars/default.jpg")'" />
 
-                                <!-- Status Badge -->
+                                <div class="car-overlay">
+                                    <a href="@Url.Action("Details", new { id = car.MAXE })" class="btn-overlay">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    @if (User.Identity.IsAuthenticated && car.TRANGTHAI == "Còn hàng")
+                                    {
+                                        <a href="@Url.Action("Create", "Order", new { carId = car.MAXE })" class="btn-overlay">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </a>
+                                    }
+                                </div>
+
                                 @if (car.TRANGTHAI == "Còn hàng")
                                 {
-                                    <span class="status-badge badge-success">
+                                    <span class="car-badge badge-available">
                                         <i class="fas fa-check-circle"></i> Còn hàng
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="status-badge badge-danger">
+                                    <span class="car-badge badge-sold">
                                         <i class="fas fa-times-circle"></i> Hết hàng
                                     </span>
                                 }
 
-                                <!-- Quick Actions -->
-                                <div class="product-actions">
-                                    <a href="@Url.Action("Details", new { id = car.MAXE })"
-                                       class="btn btn-sm btn-light"
-                                       title="Xem chi tiết">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    @if (User.Identity.IsAuthenticated && car.TRANGTHAI == "Còn hàng")
-                                    {
-                                        <a href="@Url.Action("Create", "Order", new { carId = car.MAXE })"
-                                           class="btn btn-sm btn-success"
-                                           title="Đặt cọc ngay">
-                                            <i class="fas fa-shopping-cart"></i>
-                                        </a>
-                                    }
-                                </div>
+                                <button class="btn-wishlist" onclick="toggleWishlist(this, @car.MAXE)">
+                                    <i class="far fa-heart"></i>
+                                </button>
                             </div>
 
-                            <!-- Content -->
-                            <div class="product-content">
-                                <!-- Brand -->
-                                <span class="product-brand">@car.HANGXE</span>
-
-                                <!-- Name -->
-                                <h5 class="product-title">
+                            <!-- Body -->
+                            <div class="car-body">
+                                <div class="car-brand">@car.HANGXE</div>
+                                <h5 class="car-title">
                                     <a href="@Url.Action("Details", new { id = car.MAXE })">@car.TENXE</a>
                                 </h5>
 
-                                <!-- Description -->
                                 @if (!string.IsNullOrEmpty(car.MOTA))
                                 {
-                                    <p class="product-description">
-                                        @(car.MOTA.Length > 80 ? car.MOTA.Substring(0, 80) + "..." : car.MOTA)
+                                    <p class="car-description">
+                                        @(car.MOTA.Length > 70 ? car.MOTA.Substring(0, 70) + "..." : car.MOTA)
                                     </p>
                                 }
 
-                                <!-- Info -->
-                                <div class="product-info">
-                                    <span class="info-item">
-                                        <i class="fas fa-calendar-alt"></i> @car.NAMSX
-                                    </span>
+                                <div class="car-specs">
+                                    <div class="spec-item">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>@car.NAMSX</span>
+                                    </div>
+                                    <div class="spec-item">
+                                        <i class="fas fa-cog"></i>
+                                        <span>Tự động</span>
+                                    </div>
                                 </div>
 
-                                <!-- Price & Action -->
-                                <div class="product-footer">
-                                    <div class="product-price">
+                                <div class="car-divider"></div>
+
+                                <div class="car-footer">
+                                    <div class="car-price">
                                         @if (car.GIA.HasValue)
                                         {
-                                            <span class="price">@string.Format("{0:N0}", car.GIA) đ</span>
+                                            <div class="price-value">@string.Format("{0:N0}", car.GIA)</div>
+                                            <div class="price-label">VNĐ</div>
                                         }
                                         else
                                         {
-                                            <span class="price">Liên hệ</span>
+                                            <div class="price-contact">Liên hệ</div>
                                         }
                                     </div>
 
-                                    <!-- Button logic -->
                                     @if (User.Identity.IsAuthenticated && car.TRANGTHAI == "Còn hàng")
                                     {
-                                        <a href="@Url.Action("Create", "Order", new { carId = car.MAXE })"
-                                           class="btn btn-success btn-sm">
-                                            Đặt cọc <i class="fas fa-hand-holding-usd ms-1"></i>
+                                        <a href="@Url.Action("Create", "Order", new { carId = car.MAXE })" class="btn-deposit">
+                                            <i class="fas fa-hand-holding-usd"></i>
                                         </a>
+                                    }
+                                    else if (car.TRANGTHAI == "Hết hàng")
+                                    {
+                                        <button class="btn-deposit btn-disabled" disabled>
+                                            <i class="fas fa-ban"></i>
+                                        </button>
                                     }
                                     else
                                     {
-                                        <a href="@Url.Action("Details", new { id = car.MAXE })"
-                                           class="btn btn-primary btn-sm">
-                                            Chi tiết <i class="fas fa-arrow-right ms-1"></i>
+                                        <a href="@Url.Action("Details", new { id = car.MAXE })" class="btn-deposit btn-info">
+                                            <i class="fas fa-info-circle"></i>
                                         </a>
                                     }
                                 </div>
@@ -193,16 +296,10 @@
             <!-- Pagination -->
             if (ViewBag.TotalPages != null && ViewBag.TotalPages > 1)
             {
-                <nav>
-                    <ul class="pagination justify-content-center">
+                <nav class="pagination-wrapper">
+                    <ul class="pagination-modern">
                         <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("Index", new {
-                                search = ViewBag.SearchTerm,
-                                brand = ViewBag.BrandFilter,
-                                minPrice = ViewBag.MinPrice,
-                                maxPrice = ViewBag.MaxPrice,
-                                page = ViewBag.CurrentPage - 1
-                            })">
+                            <a class="page-link" href="@Url.Action("Index", new { search = ViewBag.SearchTerm, brand = ViewBag.BrandFilter, minPrice = ViewBag.MinPrice, maxPrice = ViewBag.MaxPrice, page = ViewBag.CurrentPage - 1 })">
                                 <i class="fas fa-chevron-left"></i>
                             </a>
                         </li>
@@ -210,24 +307,12 @@
                         @for (int i = 1; i <= ViewBag.TotalPages; i++)
                         {
                             <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                                <a class="page-link" href="@Url.Action("Index", new {
-                                    search = ViewBag.SearchTerm,
-                                    brand = ViewBag.BrandFilter,
-                                    minPrice = ViewBag.MinPrice,
-                                    maxPrice = ViewBag.MaxPrice,
-                                    page = i
-                                })">@i</a>
+                                <a class="page-link" href="@Url.Action("Index", new { search = ViewBag.SearchTerm, brand = ViewBag.BrandFilter, minPrice = ViewBag.MinPrice, maxPrice = ViewBag.MaxPrice, page = i })">@i</a>
                             </li>
                         }
 
                         <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("Index", new {
-                                search = ViewBag.SearchTerm,
-                                brand = ViewBag.BrandFilter,
-                                minPrice = ViewBag.MinPrice,
-                                maxPrice = ViewBag.MaxPrice,
-                                page = ViewBag.CurrentPage + 1
-                            })">
+                            <a class="page-link" href="@Url.Action("Index", new { search = ViewBag.SearchTerm, brand = ViewBag.BrandFilter, minPrice = ViewBag.MinPrice, maxPrice = ViewBag.MaxPrice, page = ViewBag.CurrentPage + 1 })">
                                 <i class="fas fa-chevron-right"></i>
                             </a>
                         </li>
@@ -237,319 +322,1029 @@
         }
         else
         {
-            <div class="text-center py-5">
-                <i class="fas fa-car fa-5x text-muted mb-3 d-block"></i>
-                <h4 class="text-muted">Không tìm thấy xe nào</h4>
-                <p class="text-muted">Thử thay đổi bộ lọc hoặc tìm kiếm với từ khóa khác</p>
-                <a href="@Url.Action("Index")" class="btn btn-primary mt-3">
-                    <i class="fas fa-redo me-2"></i>Xem tất cả
+            <div class="empty-state scroll-reveal">
+                <div class="empty-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>Không tìm thấy xe nào</h3>
+                <p>Thử thay đổi bộ lọc hoặc tìm kiếm với từ khóa khác</p>
+                <a href="@Url.Action("Index")" class="btn btn-primary btn-lg">
+                    <i class="fas fa-redo"></i> Xem tất cả xe
                 </a>
             </div>
         }
     </div>
 </div>
 
-@section Styles {
-    <style>
-        .product-page {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+</button>
+
+<style>
+    /* Reset & Base */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow-x: hidden;
+    }
+
+    /* ==================== HERO BANNER ==================== */
+    .hero-banner {
+        position: relative;
+        min-height: 550px;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        margin-top: 0 !important;
+        padding-top: 80px;
+    }
+
+    /* Background Image with Parallax Effect */
+    .hero-bg-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1920');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        opacity: 0.15;
+        z-index: 0;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.90) 100%);
+        z-index: 1;
+    }
+
+    .hero-container {
+        position: relative;
+        z-index: 2;
+        padding: 60px 0 80px 0;
+    }
+
+    .hero-content {
+        color: white;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(15px);
+        padding: 10px 24px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 24px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        line-height: 1.2;
+        margin-bottom: 24px;
+        text-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+    }
+
+    .hero-description {
+        font-size: 1.2rem;
+        opacity: 0.95;
+        margin-bottom: 40px;
+        line-height: 1.6;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-stats {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(15px);
+        padding: 20px 24px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.25);
         }
 
-        .modern-card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-            background: white;
-        }
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
 
-        /* Product Card */
-        .product-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
+    .stat-content h3 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin: 0;
+        line-height: 1;
+    }
 
-        .product-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-        }
+    .stat-content p {
+        margin: 4px 0 0 0;
+        opacity: 0.9;
+        font-size: 0.9rem;
+    }
 
-        .product-image {
-            position: relative;
-            height: 220px;
-            overflow: hidden;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
+    /* Scroll Indicator */
+    .scroll-indicator {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 3;
+        animation: bounce 2s infinite;
+    }
 
-        .product-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .product-card:hover .product-image img {
-            transform: scale(1.15) rotate(2deg);
-        }
-
-        .status-badge {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            padding: 6px 14px;
-            border-radius: 25px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
-        }
-
-        .badge-success {
-            background: rgba(40, 167, 69, 0.95);
+        .scroll-indicator i {
+            font-size: 2rem;
             color: white;
+            opacity: 0.8;
         }
 
-        .badge-danger {
-            background: rgba(220, 53, 69, 0.95);
-            color: white;
+    /* ==================== FILTER SECTION ==================== */
+    .filter-section {
+        margin-top: -60px;
+        position: relative;
+        z-index: 10;
+        padding-bottom: 60px;
+    }
+
+    .filter-card {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+    }
+
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+    }
+
+    .filter-header {
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+        .filter-header h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 8px;
         }
 
-        .product-actions {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            display: flex;
-            gap: 8px;
-            opacity: 0;
-            transform: translateX(10px);
-            transition: all 0.3s ease;
+            .filter-header h3 i {
+                color: #667eea;
+                margin-right: 12px;
+            }
+
+        .filter-header p {
+            color: #6c757d;
+            margin: 0;
         }
 
-        .product-card:hover .product-actions {
-            opacity: 1;
-            transform: translateX(0);
-        }
+    .form-group-modern {
+        position: relative;
+    }
 
-        .product-actions .btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
+    .form-label-modern {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 10px;
+    }
 
-        .product-content {
-            padding: 20px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .product-brand {
+        .form-label-modern i {
             color: #667eea;
             font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 700;
         }
 
-        .product-title {
-            margin: 10px 0 15px;
-            font-size: 1.15rem;
-            font-weight: 700;
-            line-height: 1.4;
+    .input-wrapper,
+    .select-wrapper {
+        position: relative;
+    }
+
+    .form-control-modern,
+    .form-select-modern {
+        width: 100%;
+        padding: 14px 45px 14px 16px;
+        border: 2px solid #e9ecef;
+        border-radius: 14px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        color: #495057;
+    }
+
+        .form-control-modern:focus,
+        .form-select-modern:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
         }
 
-        .product-title a {
+    .input-icon,
+    .select-icon {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        pointer-events: none;
+        transition: all 0.3s ease;
+    }
+
+    .form-control-modern:focus ~ .input-icon,
+    .form-select-modern:focus ~ .select-icon {
+        color: #667eea;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-filter-primary {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 28px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+        .btn-filter-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+    .btn-filter-reset {
+        width: 52px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 14px;
+        color: #6c757d;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+        .btn-filter-reset:hover {
+            background: #e9ecef;
+            color: #667eea;
+            transform: rotate(180deg);
+        }
+
+    /* ==================== PRODUCTS SECTION ==================== */
+    .products-section {
+        padding: 60px 0;
+        background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #212529;
+        margin-bottom: 10px;
+    }
+
+    .title-highlight {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .section-subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+
+    .btn-add-new {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 28px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border-radius: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+        .btn-add-new:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+            color: white;
+        }
+
+    /* ==================== CAR CARDS ==================== */
+    .car-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        opacity: 0;
+        transform: translateY(50px);
+    }
+
+        .car-card.reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .car-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+    .car-image-wrapper {
+        position: relative;
+        height: 240px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    .car-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .car-card:hover .car-image {
+        transform: scale(1.15) rotate(2deg);
+    }
+
+    .car-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.92) 0%, rgba(118, 75, 162, 0.92) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+
+    .car-card:hover .car-overlay {
+        opacity: 1;
+    }
+
+    .btn-overlay {
+        width: 54px;
+        height: 54px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #667eea;
+        font-size: 1.3rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        transform: scale(0);
+    }
+
+    .car-card:hover .btn-overlay {
+        transform: scale(1);
+    }
+
+        .car-card:hover .btn-overlay:nth-child(1) {
+            transition-delay: 0.1s;
+        }
+
+        .car-card:hover .btn-overlay:nth-child(2) {
+            transition-delay: 0.2s;
+        }
+
+    .btn-overlay:hover {
+        transform: scale(1.2);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .car-badge {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        z-index: 2;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .badge-available {
+        background: rgba(40, 167, 69, 0.95);
+        color: white;
+    }
+
+    .badge-sold {
+        background: rgba(220, 53, 69, 0.95);
+        color: white;
+    }
+
+    .btn-wishlist {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 44px;
+        height: 44px;
+        background: rgba(255, 255, 255, 0.95);
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #dc3545;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 2;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+        .btn-wishlist:hover {
+            background: #dc3545;
+            color: white;
+            transform: scale(1.15);
+        }
+
+        .btn-wishlist.active {
+            background: #dc3545;
+            color: white;
+        }
+
+    .car-body {
+        padding: 24px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .car-brand {
+        color: #667eea;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1.8px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .car-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        line-height: 1.4;
+    }
+
+        .car-title a {
             color: #212529;
             text-decoration: none;
             transition: color 0.3s ease;
         }
 
-        .product-title a:hover {
-            color: #667eea;
-        }
+            .car-title a:hover {
+                color: #667eea;
+            }
 
-        .product-description {
+    .car-description {
+        font-size: 0.9rem;
+        color: #6c757d;
+        line-height: 1.6;
+        margin-bottom: 16px;
+        flex: 1;
+    }
+
+    .car-specs {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .spec-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+        .spec-item i {
+            color: #667eea;
             font-size: 0.9rem;
-            color: #6c757d;
-            margin-bottom: 15px;
-            flex: 1;
-            line-height: 1.6;
         }
 
-        .product-info {
+    .car-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #e9ecef, transparent);
+        margin-bottom: 16px;
+    }
+
+    .car-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .car-price {
+        flex: 1;
+    }
+
+    .price-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.2;
+    }
+
+    .price-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+
+    .price-contact {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .btn-deposit {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+
+        .btn-deposit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+            color: white;
+        }
+
+        .btn-deposit.btn-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+            .btn-deposit.btn-info:hover {
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            }
+
+        .btn-deposit.btn-disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+            .btn-deposit.btn-disabled:hover {
+                transform: none;
+                box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+            }
+
+    /* ==================== PAGINATION ==================== */
+    .pagination-wrapper {
+        margin-top: 50px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination-modern {
+        display: flex;
+        gap: 10px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+        .pagination-modern .page-item {
+            list-style: none;
+        }
+
+        .pagination-modern .page-link {
             display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e9ecef;
-        }
-
-        .info-item {
-            font-size: 0.85rem;
-            color: #6c757d;
-            font-weight: 500;
-        }
-
-        .info-item i {
-            margin-right: 5px;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            height: 48px;
+            padding: 0 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 14px;
             color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            background: white;
         }
 
-        .product-footer {
+            .pagination-modern .page-link:hover {
+                background: #f8f9fa;
+                border-color: #667eea;
+                transform: translateY(-3px);
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            }
+
+        .pagination-modern .page-item.active .page-link {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .pagination-modern .page-item.disabled .page-link {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+    /* ==================== EMPTY STATE ==================== */
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .empty-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 30px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .empty-icon i {
+            font-size: 3.5rem;
+            color: white;
+        }
+
+    .empty-state h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 16px;
+    }
+
+    .empty-state p {
+        font-size: 1.1rem;
+        color: #6c757d;
+        margin-bottom: 30px;
+    }
+
+    /* ==================== BACK TO TOP ==================== */
+    .back-to-top {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 1000;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+    /* ==================== ANIMATIONS ==================== */
+    .animate-fade-in {
+        animation: fadeIn 1s ease-out;
+    }
+
+    .animate-slide-up {
+        animation: slideUp 1s ease-out;
+    }
+
+    .animate-slide-up-delay {
+        animation: slideUp 1s ease-out 0.2s backwards;
+    }
+
+    .animate-fade-in-delay {
+        animation: fadeIn 1s ease-out 0.4s backwards;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes bounce {
+        0%, 100% {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        50% {
+            transform: translateX(-50%) translateY(-10px);
+        }
+    }
+
+    /* Scroll Reveal Animation */
+    .scroll-reveal {
+        opacity: 0;
+        transform: translateY(50px);
+        transition: all 0.6s ease-out;
+    }
+
+        .scroll-reveal.reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+</style>
+
+<script>
+    // ==================== SCROLL REVEAL ANIMATION ====================
+    function revealOnScroll() {
+        const reveals = document.querySelectorAll('.scroll-reveal');
+
+        reveals.forEach(element => {
+            const windowHeight = window.innerHeight;
+            const elementTop = element.getBoundingClientRect().top;
+            const revealPoint = 100;
+
+            if (elementTop < windowHeight - revealPoint) {
+                element.classList.add('reveal');
+            }
+        });
+    }
+
+    // ==================== BACK TO TOP ====================
+    const backToTopBtn = document.getElementById('backToTop');
+
+    function toggleBackToTop() {
+        if (window.pageYOffset > 300) {
+            backToTopBtn.classList.add('show');
+        } else {
+            backToTopBtn.classList.remove('show');
+        }
+    }
+
+    backToTopBtn.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+
+    // ==================== PARALLAX EFFECT ====================
+    function parallaxEffect() {
+        const scrolled = window.pageYOffset;
+        const parallax = document.querySelector('.hero-bg-image');
+        if (parallax) {
+            parallax.style.transform = 'translateY(' + (scrolled * 0.5) + 'px)';
+        }
+    }
+
+    // ==================== WISHLIST TOGGLE ====================
+    function toggleWishlist(button, carId) {
+        button.classList.toggle('active');
+
+        if (button.classList.contains('active')) {
+            button.innerHTML = '<i class="fas fa-heart"></i>';
+            showNotification('Đã thêm vào yêu thích!', 'success');
+        } else {
+            button.innerHTML = '<i class="far fa-heart"></i>';
+            showNotification('Đã xóa khỏi yêu thích!', 'info');
+        }
+
+        console.log('Wishlist toggled for car ID:', carId);
+    }
+
+    // ==================== NOTIFICATION ====================
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = 'notification-toast';
+        notification.innerHTML = '<i class="fas fa-' + (type === 'success' ? 'check-circle' : 'info-circle') + '"></i> ' + message;
+
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#28a745' : '#667eea'};
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            font-weight: 600;
             display: flex;
-            justify-content: space-between;
             align-items: center;
             gap: 10px;
-        }
+            animation: slideInRight 0.4s ease-out;
+        `;
 
-        .product-price .price {
-            font-size: 1.35rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip:text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+        document.body.appendChild(notification);
 
-        .product-footer .btn {
-            border-radius: 25px;
-            padding: 8px 18px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-        }
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.4s ease-out';
+            setTimeout(() => notification.remove(), 400);
+        }, 3000);
+    }
 
-        .product-footer .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            border: none;
-        }
-
-        .product-footer .btn-success:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
-        }
-
-        .product-footer .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-        }
-
-        .product-footer .btn-primary:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        /* Pagination */
-        .pagination {
-            margin-top: 40px;
-        }
-
-        .page-link {
-            border-radius: 10px;
-            margin: 0 5px;
-            padding: 10px 18px;
-            border: 2px solid #e9ecef;
-            color: #667eea;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .page-link:hover {
-            background: #f8f9fa;
-            border-color: #667eea;
-            transform: translateY(-2px);
-        }
-
-        .page-item.active .page-link {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-color: #667eea;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .page-item.disabled .page-link {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Filter Card Enhancement */
-        .modern-card .form-label {
-            font-size: 0.9rem;
-            margin-bottom: 8px;
-        }
-
-        .modern-card .form-control,
-        .modern-card .form-select {
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 10px 15px;
-            transition: all 0.3s ease;
-        }
-
-        .modern-card .form-control:focus,
-        .modern-card .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-
-        .modern-card .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 10px;
-            padding: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .modern-card .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        /* Empty State */
-        .text-center.py-5 {
-            background: white;
-            border-radius: 15px;
-            padding: 60px 20px !important;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-
-        .text-center.py-5 .fas.fa-car {
-            opacity: 0.3;
-        }
-
-      
-    </style>
-}
-
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            console.log('Product Index loaded');
-            console.log('Total cars: @(ViewBag.TotalCars ?? Model.Count)');
-
-            // Smooth scroll to top when pagination is clicked
-            $('.pagination a').on('click', function() {
-                $('html, body').animate({
-                    scrollTop: 0
-                }, 600);
-            });
-
-            // Add loading animation to buttons
-            $('.btn').on('click', function() {
-                if (!$(this).hasClass('page-link')) {
-                    $(this).html('<i class="fas fa-spinner fa-spin"></i>');
-                }
+    // ==================== SMOOTH SCROLL FOR PAGINATION ====================
+    document.querySelectorAll('.pagination-modern a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            window.scrollTo({
+                top: document.querySelector('.products-section').offsetTop - 100,
+                behavior: 'smooth'
             });
         });
-    </script>
-}
+    });
+
+    // ==================== FILTER FORM ENHANCEMENT ====================
+    document.querySelectorAll('.form-control-modern, .form-select-modern').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+        });
+
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    });
+
+    // ==================== EVENT LISTENERS ====================
+    window.addEventListener('scroll', function() {
+        revealOnScroll();
+        toggleBackToTop();
+        parallaxEffect();
+    });
+
+    window.addEventListener('load', function() {
+        revealOnScroll();
+
+        // Stagger animation for car cards
+        const cards = document.querySelectorAll('.car-card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.classList.add('reveal');
+            }, index * 100);
+        });
+    });
+
+    // ==================== LOADING ANIMATION ====================
+    document.querySelector('.btn-filter-primary')?.addEventListener('click', function() {
+        const btn = this;
+        const originalHTML = btn.innerHTML;
+
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Đang tìm...</span>';
+        btn.style.pointerEvents = 'none';
+
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.style.pointerEvents = 'auto';
+        }, 2000);
+    });
+
+    // ==================== CSS ANIMATIONS ====================
+    const style = document.createElement('style');
+    style.textContent = `
+        @@keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @@keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
